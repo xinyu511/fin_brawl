@@ -1,0 +1,32 @@
+.hero {
+  align-items: center;
+}
+
+.heroCard {
+  text-align: center;
+  width: min(760px, 96vw);
+  margin: 0 auto;
+}
+
+.centerText {
+  text-align: center;
+}
+
+.centerRow {
+  justify-content: center;
+}
+
+.centerList {
+  list-style-position: inside;
+  padding-left: 0;
+  text-align: center;
+}
+
+.getStartedButton {
+  min-width: 200px;
+  padding: 14px 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(24, 64, 42, 0.18);
+  background: linear-gradient(135deg, #bfe6d6 0%, #f7f7f2 100%);
+  font-weight: 600;
+}

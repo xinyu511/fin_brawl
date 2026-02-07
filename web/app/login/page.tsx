@@ -37,6 +37,13 @@ export default function LoginPage() {
   return (
     <div className={styles.loginPage}>
       <div className={`card ${styles.loginCard}`}>
+        <button
+          className={styles.backButton}
+          type="button"
+          onClick={() => (window.location.href = "/")}
+        >
+          ← Back
+        </button>
         <h3 style={{ marginTop: 0 }}>Login / Sign up</h3>
         <div className="stack">
           <input
@@ -51,8 +58,12 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
           <div className="row">
-            <button type="button" onClick={signIn}>Sign in</button>
-            <button type="button" onClick={signUp}>Sign up</button>
+            <button type="button" onClick={signIn}>
+              Sign in
+            </button>
+            <button type="button" onClick={signUp}>
+              Sign up
+            </button>
           </div>
           {status && <div className="muted">{status}</div>}
         </div>

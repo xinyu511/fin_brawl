@@ -23,7 +23,12 @@ export default function Sidebar({ active, username, status, title }: SidebarProp
     window.location.href = "/";
   }
 
+  function goLogin() {
+    window.location.href = "/login";
+  }
+
   const showStatus = status && status !== "not_found";
+  const isLoggedIn = Boolean(username);
 
   return (
     <aside className={`card ${styles.sidebar}`}>
@@ -46,8 +51,11 @@ export default function Sidebar({ active, username, status, title }: SidebarProp
         <div className={`muted ${styles.sidebarMeta}`}>
           User: {username ?? "Not logged in"}
         </div>
-        <button className={`${styles.tab} ${styles.tabButton}`} onClick={signOut}>
-          Logout
+        <button
+          className={`${styles.tab} ${styles.tabButton}`}
+          onClick={isLoggedIn ? signOut : goLogin}
+        >
+          {isLoggedIn ? "Logout" : "Login"}
         </button>
         {showStatus && <div className={`muted ${styles.sidebarStatus}`}>{status}</div>}
       </div>

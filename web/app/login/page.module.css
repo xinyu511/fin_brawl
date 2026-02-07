@@ -26,3 +26,12 @@
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(6px);
 }
+
+.backButton {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #1f2228;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
