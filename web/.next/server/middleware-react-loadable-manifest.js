@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST="{\"app/transactions/page.tsx -> @/lib/supabaseClient\":{\"id\":\"app/transactions/page.tsx -> @/lib/supabaseClient\",\"files\":[\"static/chunks/_app-pages-browser_lib_supabaseClient_ts.js\"]}}"

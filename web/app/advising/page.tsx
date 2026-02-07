@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeSanitize from "rehype-sanitize";
 import { getMe, getToken } from "@/lib/backendClient";
 import Sidebar from "../dashboard/Sidebar";
 import styles from "../dashboard/page.module.css";
@@ -183,11 +186,16 @@ export default function AdvisingPage() {
                       }`}
                     >
                       <span className={styles.chatBubble}>
-                        {msg.content}
-                        {isTyping && idx === displayChat.length - 1 ? (
-                          <span className={styles.typingCursor}>▍</span>
-                        ) : null}
-                      </span>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeSanitize]}
+                          >
+                            {msg.content}
+                          </ReactMarkdown>
+                          {isTyping && idx === displayChat.length - 1 ? (
+                            <span className={styles.typingCursor}>▍</span>
+                          ) : null}
+                        </span>
                     </div>
                   ))}
                   {status === "Thinking..." && !isTyping && (
