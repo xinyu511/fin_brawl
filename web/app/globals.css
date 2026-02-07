@@ -11,6 +11,15 @@ a { color: inherit; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; }
 input, button, textarea, select { font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid #d1d5db; }
 button { cursor: pointer; }
+.button-link {
+  display: inline-block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  cursor: pointer;
+  text-decoration: none;
+}
 .muted { color: #6b7280; }
 .stack { display: grid; gap: 10px; }
 table { width: 100%; border-collapse: collapse; }

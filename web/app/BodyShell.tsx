@@ -1,11 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 export default function BodyShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isDashboard = pathname.startsWith("/dashboard");
+  const isDashboard =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/account") ||
+    pathname.startsWith("/transactions") ||
+    pathname.startsWith("/advising");
   if (isDashboard) {
     return <div className="page page--dashboard">{children}</div>;
   }
@@ -21,9 +26,9 @@ export default function BodyShell({ children }: { children: ReactNode }) {
           marginBottom: 16,
         }}
       >
-        <a href="/" style={{ textDecoration: "none" }}>
+        <Link href="/" style={{ textDecoration: "none" }}>
           <h2 style={{ margin: 0 }}>Budget Agent</h2>
-        </a>
+        </Link>
         <div className="muted" style={{ fontSize: 13 }}>
           Next.js • Supabase • OpenAI
         </div>

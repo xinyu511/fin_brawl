@@ -174,6 +174,7 @@ export async function POST(req: Request) {
             category: parsed.category ?? "Other",
             occurred_at: parsed.date,
             note: parsed.merchant,
+            merchant: parsed.merchant,
             source: "chat",
           }),
         }

@@ -62,10 +62,6 @@ def signin(conn: sqlite3.Connection, username: str, password: str) -> Optional[i
         (username,),
     ).fetchone()
     if row and verify_password(password, row["password_hash"]):
-        conn.execute(
-            "UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?",
-            (row["id"],),
-        )
         conn.commit()
         return int(row["id"])
     return None
@@ -92,4 +88,3 @@ def set_username(conn: sqlite3.Connection, user_id: int, new_username: str) -> b
     except sqlite3.IntegrityError:
         conn.rollback()
         return False
-

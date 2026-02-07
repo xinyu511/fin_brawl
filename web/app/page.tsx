@@ -1,4 +1,9 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 export default function Home() {
+  const router = useRouter();
   return (
     <div className="stack">
       <div className="card">
@@ -7,7 +12,9 @@ export default function Home() {
           Login • Upload receipt photo → auto-extracted transaction • Chat to add expenses • Ask affordability questions.
         </p>
         <div className="row">
-          <a href="/login"><button>Get started</button></a>
+          <button type="button" onClick={() => router.push("/login")}>
+            Get started
+          </button>
         </div>
       </div>
 

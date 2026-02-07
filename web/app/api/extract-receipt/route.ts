@@ -102,6 +102,7 @@ export async function POST(req: Request) {
           category: "Receipt",
           occurred_at: tx.date,
           note: tx.merchant,
+          merchant: tx.merchant,
           source: "receipt",
         }),
       }

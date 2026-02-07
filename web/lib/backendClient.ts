@@ -85,10 +85,49 @@ export type BackendTransaction = {
   merchant: string;
   amount: number;
   category: string | null;
-  source: "chat" | "receipt";
+  source: "chat" | "receipt" | "manual";
   receipt_url: string | null;
   created_at: string;
 };
+
+export type FinancialProfile = {
+  user_id: number;
+  currency: string;
+  net_worth_cents: number | null;
+  risk_tolerance: "low" | "medium" | "high" | null;
+  financial_goal: "save" | "invest" | "retire" | "reduce_debt" | null;
+  time_horizon: "short" | "medium" | "long" | null;
+  age_range: string | null;
+  location: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProfileResponse = { profile: FinancialProfile };
+
+export async function getProfile(): Promise<ProfileResponse> {
+  return fetchBackend<ProfileResponse>("/api/profile");
+}
+
+export type UpdateProfileBody = Partial<
+  Pick<
+    FinancialProfile,
+    | "currency"
+    | "net_worth_cents"
+    | "risk_tolerance"
+    | "financial_goal"
+    | "time_horizon"
+    | "age_range"
+    | "location"
+  >
+>;
+
+export async function updateProfile(body: UpdateProfileBody): Promise<ProfileResponse> {
+  return fetchBackend<ProfileResponse>("/api/profile", {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
 
 export async function getExpenses(): Promise<BackendTransaction[]> {
   return fetchBackend<BackendTransaction[]>("/expenses?limit=200");
@@ -99,13 +138,21 @@ export type AddExpenseBody = {
   category: string;
   occurred_at: string;
   note?: string | null;
-  source?: "chat" | "receipt";
+  merchant?: string | null;
+  source?: "chat" | "receipt" | "manual";
+  receipt_url?: string | null;
 };
 
 export async function addExpense(body: AddExpenseBody): Promise<{ id: number }> {
   return fetchBackend<{ id: number }>("/expenses", {
     method: "POST",
     body: JSON.stringify(body),
+  });
+}
+
+export async function deleteExpense(id: string | number): Promise<{ deleted: boolean }> {
+  return fetchBackend<{ deleted: boolean }>(`/expenses/${id}`, {
+    method: "DELETE",
   });
 }
 

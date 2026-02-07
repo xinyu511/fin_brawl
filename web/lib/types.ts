@@ -5,7 +5,7 @@ export type Transaction = {
   merchant: string;
   amount: number;
   category: string | null;
-  source: "receipt" | "chat";
+  source: "receipt" | "chat" | "manual";
   receipt_url: string | null;
   created_at: string;
 };

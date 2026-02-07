@@ -14,7 +14,7 @@ def _cors_headers() -> list[tuple[str, str]]:
     return [
         ("Access-Control-Allow-Origin", "*"),
         ("Access-Control-Allow-Headers", "Content-Type, Authorization"),
-        ("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS"),
+        ("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS"),
         ("Access-Control-Max-Age", "86400"),
     ]
 
@@ -71,6 +71,23 @@ def _bearer_token(environ) -> Optional[str]:
     if auth.startswith(prefix):
         return auth[len(prefix) :].strip()
     return None
+
+
+def _parse_limit(environ, default: int = 200, max_limit: int = 500) -> int:
+    qs = environ.get("QUERY_STRING") or ""
+    for part in qs.split("&"):
+        if not part:
+            continue
+        k, _, v = part.partition("=")
+        if k == "limit":
+            try:
+                limit = int(v)
+                if limit <= 0:
+                    return default
+                return min(limit, max_limit)
+            except ValueError:
+                return default
+    return default
 
 
 def _get_profile(conn, user_id: int) -> Optional[Dict[str, Any]]:
@@ -222,6 +239,108 @@ def app(environ, start_response):
                         start_response, 200, {"updated": bool(changed), "profile": profile}
                     )
             return _json_response(start_response, 405, {"error": "method_not_allowed"})
+
+        if path == "/expenses":
+            token = _bearer_token(environ)
+            if token is None:
+                return _json_response(start_response, 401, {"error": "missing_auth"})
+            user_id = verify_auth_token(token)
+            if user_id is None:
+                return _json_response(start_response, 401, {"error": "invalid_token"})
+            if method == "GET":
+                limit = _parse_limit(environ)
+                with session() as conn:
+                    rows = conn.execute(
+                        """
+                        SELECT id, user_id, amount_cents, category, occurred_at, note,
+                               merchant, source, receipt_url, created_at
+                        FROM expenses
+                        WHERE user_id = ?
+                        ORDER BY occurred_at DESC
+                        LIMIT ?
+                        """,
+                        (user_id, limit),
+                    ).fetchall()
+                out = []
+                for r in rows:
+                    occurred = r["occurred_at"] or ""
+                    date = occurred[:10] if len(occurred) >= 10 else occurred
+                    merchant = r["merchant"] or r["note"] or ""
+                    source = r["source"] or ("receipt" if r["category"] == "Receipt" else "manual")
+                    out.append(
+                        {
+                            "id": str(r["id"]),
+                            "user_id": str(r["user_id"]),
+                            "date": date,
+                            "merchant": merchant,
+                            "amount": float(r["amount_cents"]) / 100.0,
+                            "category": r["category"],
+                            "source": source,
+                            "receipt_url": r["receipt_url"],
+                            "created_at": r["created_at"],
+                        }
+                    )
+                return _json_response(start_response, 200, out)
+            if method == "POST":
+                body, err = _read_json(environ)
+                if body is None:
+                    return _json_response(start_response, 400, {"error": err})
+                amount_cents = body.get("amount_cents")
+                category = body.get("category")
+                occurred_at = body.get("occurred_at")
+                note = body.get("note")
+                merchant = body.get("merchant")
+                source = body.get("source")
+                receipt_url = body.get("receipt_url")
+                if not isinstance(amount_cents, int) or not isinstance(category, str) or not isinstance(
+                    occurred_at, str
+                ):
+                    return _json_response(start_response, 400, {"error": "missing_fields"})
+                with session() as conn:
+                    cur = conn.execute(
+                        """
+                        INSERT INTO expenses
+                          (user_id, amount_cents, category, occurred_at, note, merchant, source, receipt_url)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            user_id,
+                            amount_cents,
+                            category,
+                            occurred_at,
+                            note,
+                            merchant,
+                            source,
+                            receipt_url,
+                        ),
+                    )
+                    conn.commit()
+                    return _json_response(start_response, 201, {"id": int(cur.lastrowid)})
+            return _json_response(start_response, 405, {"error": "method_not_allowed"})
+
+        if path.startswith("/expenses/"):
+            token = _bearer_token(environ)
+            if token is None:
+                return _json_response(start_response, 401, {"error": "missing_auth"})
+            user_id = verify_auth_token(token)
+            if user_id is None:
+                return _json_response(start_response, 401, {"error": "invalid_token"})
+            if method != "DELETE":
+                return _json_response(start_response, 405, {"error": "method_not_allowed"})
+            tail = path.rsplit("/", 1)[-1]
+            try:
+                expense_id = int(tail)
+            except ValueError:
+                return _json_response(start_response, 400, {"error": "invalid_id"})
+            with session() as conn:
+                cur = conn.execute(
+                    "DELETE FROM expenses WHERE id = ? AND user_id = ?",
+                    (expense_id, user_id),
+                )
+                conn.commit()
+                return _json_response(
+                    start_response, 200, {"deleted": cur.rowcount > 0}
+                )
 
         return _json_response(start_response, 404, {"error": "not_found"})
     except Exception:

@@ -11,13 +11,8 @@ export default function LoginPage() {
   async function signUp() {
     setStatus("Signing up...");
     try {
-      const { token: signupToken } = await register(username, password);
+      await register(username, password);
       setStatus("Signed up! Redirecting...");
-      if (signupToken) {
-        setToken(signupToken);
-        window.location.href = "/dashboard";
-        return;
-      }
       const { token } = await login(username, password);
       setToken(token);
       window.location.href = "/dashboard";
@@ -55,10 +50,10 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
           <div className="row">
-            <button onClick={signIn}>Sign in</button>
-            <button onClick={signUp}>Sign up</button>
+            <button type="button" onClick={signIn}>Sign in</button>
+            <button type="button" onClick={signUp}>Sign up</button>
           </div>
-          <div className="muted">{status}</div>
+          {status && <div className="muted">{status}</div>}
         </div>
       </div>
     </div>

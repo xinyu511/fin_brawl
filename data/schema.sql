@@ -8,8 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   id              INTEGER PRIMARY KEY,
   username        TEXT NOT NULL UNIQUE,
   password_hash   TEXT NOT NULL,
-  created_at      TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  last_login_at   TEXT
+  created_at      TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
 );
 
 -- 2) Financial Profile (1:1 with user)
@@ -46,7 +45,9 @@ CREATE TABLE IF NOT EXISTS expenses (
   amount_cents      INTEGER NOT NULL,
   category          TEXT NOT NULL,
   occurred_at       TEXT NOT NULL,
-  note              TEXT,
+  merchant          TEXT,
+  source            TEXT,
+  receipt_url       TEXT,
   created_at        TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
 );
 CREATE INDEX IF NOT EXISTS idx_expenses_user_time ON expenses(user_id, occurred_at);
@@ -78,4 +79,3 @@ SELECT
   SUM(amount_cents) AS total_expense_cents
 FROM expenses
 GROUP BY user_id, year_month, category;
-
