@@ -12,7 +12,10 @@ export default function LoginPage() {
     setStatus("Signing up...");
     try {
       await register(username, password);
-      setStatus("Signed up! Now sign in.");
+      setStatus("Signed up! Redirecting...");
+      const { token } = await login(username, password);
+      setToken(token);
+      window.location.href = "/dashboard";
     } catch (e: unknown) {
       setStatus(e instanceof Error ? e.message : "Sign up failed.");
     }

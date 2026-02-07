@@ -8,9 +8,46 @@ import {
   type BackendTransaction,
 } from "@/lib/backendClient";
 import type { Transaction } from "@/lib/types";
-import { supabase } from "@/lib/supabaseClient";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
+
+const STATIC_MODE = process.env.NEXT_PUBLIC_STATIC_MODE === "true";
+const STATIC_USER_ID = "static-user";
+const STATIC_TXS: Transaction[] = [
+  {
+    id: "t1",
+    user_id: STATIC_USER_ID,
+    date: "2026-02-03",
+    merchant: "Trader Joe's",
+    amount: 64.23,
+    category: "Groceries",
+    source: "receipt",
+    receipt_url: null,
+    created_at: "2026-02-03T12:30:00Z",
+  },
+  {
+    id: "t2",
+    user_id: STATIC_USER_ID,
+    date: "2026-02-01",
+    merchant: "Uber",
+    amount: 28.5,
+    category: "Transport",
+    source: "chat",
+    receipt_url: null,
+    created_at: "2026-02-01T18:20:00Z",
+  },
+  {
+    id: "t3",
+    user_id: STATIC_USER_ID,
+    date: "2026-01-29",
+    merchant: "Netflix",
+    amount: 19.99,
+    category: "Subscriptions",
+    source: "chat",
+    receipt_url: null,
+    created_at: "2026-01-29T08:00:00Z",
+  },
+];
 
 function toTransaction(t: BackendTransaction): Transaction {
   return {
@@ -67,6 +104,10 @@ export default function DashboardPage() {
 
   async function refreshTransactions() {
     if (!userId) return;
+    if (STATIC_MODE) {
+      setTxs(STATIC_TXS);
+      return;
+    }
     try {
       const data = await getExpenses();
       setTxs(data.map(toTransaction));
@@ -89,12 +130,17 @@ export default function DashboardPage() {
   }, [txs]);
 
   async function uploadReceipt(file: File) {
+    if (STATIC_MODE) {
+      setStatus("Static mode: receipt upload disabled.");
+      return;
+    }
     if (!userId) {
       setStatus("Please login first.");
       return;
     }
     setStatus("Uploading receipt...");
     try {
+      const { supabase } = await import("@/lib/supabaseClient");
       const ext = file.name.split(".").pop() || "jpg";
       const path = `${userId}/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
@@ -134,6 +180,17 @@ export default function DashboardPage() {
     if (!msg) return;
     setChatInput("");
     setChat((prev) => [...prev, { role: "user", content: msg }]);
+    if (STATIC_MODE) {
+      setStatus("");
+      setChat((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Static mode: chat disabled. Enable backend to use AI.",
+        },
+      ]);
+      return;
+    }
     setStatus("Thinking...");
 
     const res = await fetch("/api/chat", {
