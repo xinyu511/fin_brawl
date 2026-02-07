@@ -2,11 +2,16 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { llmComplete } from "@/lib/llm";
 
-const Body = z.object({
-  user_id: z.string(),
-  token: z.string().optional(),
-  receipt_url: z.string().url(),
-});
+const Body = z
+  .object({
+    user_id: z.string(),
+    token: z.string().optional(),
+    receipt_url: z.string().url().optional(),
+    receipt_data_url: z.string().min(1).optional(),
+  })
+  .refine((b) => b.receipt_url || b.receipt_data_url, {
+    message: "receipt_url or receipt_data_url is required",
+  });
 
 const BACKEND_URL =
   process.env.BACKEND_URL ||
@@ -33,12 +38,20 @@ async function backendFetch<T = unknown>(
   return res.json() as Promise<T>;
 }
 
-const SYSTEM = `You extract receipt totals. Output ONLY JSON with keys: merchant, date (YYYY-MM-DD), amount (number).`;
+const SYSTEM = `You extract transactions from receipt images.
+Output ONLY JSON: an array of objects. Each object must have:
+- merchant (string)
+- date (YYYY-MM-DD)
+- amount (number, total charged for that transaction)
+Optional fields:
+- category (string, choose the best fit from: Groceries, Dining, Transport, Housing, Utilities, Health, Entertainment, Subscriptions, Shopping, Other)
+- note (string)
+If the receipt clearly represents a single purchase, return a single-item array.`;
 
 export async function POST(req: Request) {
   try {
     const json = await req.json();
-    const { user_id, token, receipt_url } = Body.parse(json);
+    const { user_id, token, receipt_url, receipt_data_url } = Body.parse(json);
 
     if (!token) {
       return NextResponse.json(
@@ -65,7 +78,7 @@ export async function POST(req: Request) {
               type: "input_text",
               text: "From this receipt image, output ONLY JSON with merchant, date (YYYY-MM-DD), and total amount.",
             },
-            { type: "input_image", image_url: receipt_url },
+            { type: "input_image", image_url: receipt_url || receipt_data_url! },
           ],
         },
       ],
@@ -76,39 +89,57 @@ export async function POST(req: Request) {
         (c: { type: string }) => c.type === "output_text"
       )?.text ?? "";
 
-    let extracted: { merchant: string; date: string; amount: number };
+    let extracted: unknown;
     try {
       extracted = JSON.parse(textOut);
     } catch {
-      const m = textOut.match(/\{[\s\S]*\}/);
-      if (!m) throw new Error("Could not parse JSON from model output");
-      extracted = JSON.parse(m[0]);
+      const arr = textOut.match(/\[[\s\S]*\]/);
+      const obj = textOut.match(/\{[\s\S]*\}/);
+      const candidate = arr?.[0] || obj?.[0];
+      if (!candidate) throw new Error("Could not parse JSON from model output");
+      extracted = JSON.parse(candidate);
     }
 
     const Tx = z.object({
       merchant: z.string().min(1),
       date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       amount: z.number(),
+      category: z.string().min(1).optional(),
+      note: z.string().min(1).optional(),
     });
-    const tx = Tx.parse(extracted);
 
-    await backendFetch(
-      "/expenses",
-      token,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          amount_cents: Math.round(tx.amount * 100),
-          category: "Receipt",
-          occurred_at: tx.date,
-          note: tx.merchant,
-          merchant: tx.merchant,
-          source: "receipt",
-        }),
-      }
-    );
+    const txsRaw = Array.isArray(extracted) ? extracted : [extracted];
+    const today = new Date().toISOString().slice(0, 10);
+    const normalized = txsRaw.map((t: any) => {
+      const rawDate = typeof t?.date === "string" ? t.date : "";
+      const isoMatch = rawDate.match(/^\d{4}-\d{2}-\d{2}/);
+      const date = isoMatch ? isoMatch[0] : today;
+      return { ...t, date };
+    });
+    const txs = z.array(Tx).min(1).parse(normalized);
 
-    return NextResponse.json({ ok: true, extracted: tx });
+    const createdIds: number[] = [];
+    for (const tx of txs) {
+      const created = await backendFetch<{ id: number }>(
+        "/expenses",
+        token,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            amount_cents: Math.round(tx.amount * 100),
+            category: tx.category || "Receipt",
+            occurred_at: tx.date,
+            note: tx.note || tx.merchant,
+            merchant: tx.merchant,
+            source: "receipt",
+            receipt_url: receipt_url || null,
+          }),
+        }
+      );
+      createdIds.push(created.id);
+    }
+
+    return NextResponse.json({ ok: true, extracted: txs, created_ids: createdIds });
   } catch (e: unknown) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Unknown error" },

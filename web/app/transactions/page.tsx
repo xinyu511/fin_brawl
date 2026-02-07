@@ -94,6 +94,7 @@ export default function TransactionsPage() {
   const [fixedCosts, setFixedCosts] = useState<number>(1500);
   const [showManual, setShowManual] = useState<boolean>(false);
   const [showReceipt, setShowReceipt] = useState<boolean>(false);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [selectedDay, setSelectedDay] = useState<number>(7);
   const [monthOffset, setMonthOffset] = useState<number>(0);
   const [interval, setInterval] = useState<"day" | "month" | "quarter" | "year">("month");
@@ -353,42 +354,57 @@ export default function TransactionsPage() {
       setStatus("Static mode: receipt upload disabled.");
       return;
     }
+    if (isAnalyzing) {
+      setStatus("Already analyzing a receipt. Please wait.");
+      return;
+    }
     if (!userId) {
       setStatus("Please login first.");
       return;
     }
-    setStatus("Uploading receipt...");
     try {
-      const { supabase } = await import("@/lib/supabaseClient");
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${userId}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("receipts")
-        .upload(path, file, { upsert: true });
-      if (upErr) {
-        setStatus(upErr.message);
-        return;
-      }
-      const { data: pub } = supabase.storage.from("receipts").getPublicUrl(path);
-      const receiptUrl = pub.publicUrl;
+      setStatus("Analyzing receipt...");
+      setIsAnalyzing(true);
+      try {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error("Failed to read image file."));
+          reader.onload = () => resolve(String(reader.result));
+          reader.readAsDataURL(file);
+        });
 
-      setStatus("Extracting transaction with OpenAI vision...");
-      const res = await fetch("/api/extract-receipt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          receipt_url: receiptUrl,
-          token: getToken(),
-        }),
-      });
-      const out = await res.json();
-      if (!res.ok) {
-        setStatus(out.error || "Extraction failed");
-        return;
+        const res = await fetch("/api/extract-receipt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: userId,
+            receipt_data_url: dataUrl,
+            token: getToken(),
+          }),
+        });
+        const out = await res.json();
+        if (!res.ok) {
+          setStatus(out.error || "Extraction failed");
+          return;
+        }
+        const extracted = Array.isArray(out.extracted) ? out.extracted : [out.extracted];
+        const count = extracted.length || 1;
+        setStatus(`Saved ${count} transaction${count === 1 ? "" : "s"} from receipt!`);
+        await refreshTransactions();
+        const firstDate = extracted?.[0]?.date;
+        if (typeof firstDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(firstDate)) {
+          const d = new Date(`${firstDate}T00:00:00`);
+          const now = new Date();
+          const monthDiff =
+            (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
+          setMonthOffset(monthDiff);
+          setSelectedDay(d.getDate());
+          setInterval("month");
+          setFilterCategory("all");
+        }
+      } finally {
+        setIsAnalyzing(false);
       }
-      setStatus("Saved transaction from receipt!");
-      await refreshTransactions();
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "Receipt upload failed.");
     }
@@ -717,6 +733,7 @@ export default function TransactionsPage() {
                   <input
                     type="file"
                     accept="image/*"
+                    disabled={isAnalyzing}
                     onChange={(e) => {
                       const f = e.target.files?.[0];
                       if (f) uploadReceipt(f);
@@ -729,6 +746,14 @@ export default function TransactionsPage() {
                   {status}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {isAnalyzing && (
+          <div className={styles.blockingOverlay}>
+            <div className={styles.blockingCard}>
+              Analyzing receipt… Please wait.
             </div>
           </div>
         )}

@@ -829,6 +829,25 @@
   z-index: 50;
 }
 
+.page_blockingOverlay__Sjq1T {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 24, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+
+.page_blockingCard__ZP8o6 {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-weight: 600;
+  color: #1d1d25;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
 .page_modal___uz_6 {
   width: min(920px, 92vw);
   background: #fff;
