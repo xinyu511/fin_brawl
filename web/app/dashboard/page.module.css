@@ -117,6 +117,11 @@
   gap: 8px;
 }
 
+.statSplit {
+  border-radius: 999px;
+  padding: 12px 18px;
+}
+
 .statLabel {
   color: var(--dash-muted);
   font-weight: 600;
@@ -126,6 +131,13 @@
   font-size: 20px;
   font-weight: 700;
   color: var(--dash-ink);
+}
+
+.categoryHeading {
+  font-size: 22px;
+  color: #1f2228;
+  margin-top: 4px;
+  text-align: left;
 }
 
 .statInput {

@@ -4,8 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import {
   getExpenses,
   getMe,
+  getProfile,
+  getIncomes,
   getToken,
   type BackendTransaction,
+  type BackendIncome,
 } from "@/lib/backendClient";
 import type { Transaction } from "@/lib/types";
 import styles from "./page.module.css";
@@ -86,8 +89,8 @@ export default function DashboardPage() {
     },
   ]);
 
-  const [monthlyIncome, setMonthlyIncome] = useState<number>(4000);
-  const [fixedCosts, setFixedCosts] = useState<number>(1500);
+  const [netWorth, setNetWorth] = useState<number>(0);
+  const [incomeTotal, setIncomeTotal] = useState<number>(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
@@ -130,9 +133,35 @@ export default function DashboardPage() {
     }
   }
 
+  async function refreshAccountSnapshot() {
+    if (!userId) return;
+    if (STATIC_MODE) {
+      setNetWorth(0);
+      setIncomeTotal(0);
+      return;
+    }
+    try {
+      const [profileResp, incomes] = await Promise.all([
+        getProfile(),
+        getIncomes(),
+      ]);
+      const profile = profileResp.profile;
+      const nw = profile.net_worth_cents != null ? profile.net_worth_cents / 100 : 0;
+      const incomeSum = incomes.reduce(
+        (acc: number, inc: BackendIncome) => acc + Number(inc.amount || 0),
+        0
+      );
+      setNetWorth(nw);
+      setIncomeTotal(incomeSum);
+    } catch (e) {
+      setStatus(e instanceof Error ? e.message : "Failed to load account data.");
+    }
+  }
+
   useEffect(() => {
     if (!userId) return;
     refreshTransactions();
+    refreshAccountSnapshot();
   }, [userId]);
 
   const last30Spend = useMemo(() => {
@@ -142,6 +171,14 @@ export default function DashboardPage() {
       .filter((t) => new Date(t.date) >= cutoff)
       .reduce((acc, t) => acc + Number(t.amount), 0);
   }, [txs]);
+
+  const totalSpend = useMemo(() => {
+    return txs.reduce((acc, t) => acc + Number(t.amount || 0), 0);
+  }, [txs]);
+
+  const currentBalance = useMemo(() => {
+    return netWorth + incomeTotal - totalSpend;
+  }, [incomeTotal, netWorth, totalSpend]);
 
   const last7Days = useMemo(() => {
     const today = new Date();
@@ -215,10 +252,17 @@ export default function DashboardPage() {
         <div className="card" id="overview">
           <div className={styles.overviewStage}>
             <div className={`row ${styles.statRow}`}>
-              <div className={styles.statCard}>
-                <div className={styles.statLabel}>Last 30d spend</div>
+              <div className={`${styles.statCard} ${styles.statSplit}`}>
+                <div className={styles.statLabel}>Last 30 days spend</div>
                 <div className={styles.statValue}>${last30Spend.toFixed(2)}</div>
               </div>
+              <div className={`${styles.statCard} ${styles.statSplit}`}>
+                <div className={styles.statLabel}>Current total balance</div>
+                <div className={styles.statValue}>${currentBalance.toFixed(2)}</div>
+              </div>
+            </div>
+            <div className={`brand-font ${styles.categoryHeading}`}>
+              Main Spending Categories
             </div>
             <div className={styles.overviewArt}>
               <div className={styles.overviewArtInner}>
