@@ -158,6 +158,7 @@
   background-repeat: no-repeat;
   position: relative;
   overflow: hidden;
+  min-height: calc(100vh - 32px);
 }
 
 .overviewStage::before {
@@ -186,7 +187,7 @@
 .overviewArtInner {
   position: relative;
   width: 560px;
-  height: 320px;
+  height: 500px;
 }
 
 .artBox {
