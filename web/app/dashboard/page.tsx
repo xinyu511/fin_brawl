@@ -1,10 +1,47 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import type { Transaction } from "@/lib/types";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
+
+const STATIC_MODE = process.env.NEXT_PUBLIC_STATIC_MODE === "true";
+const STATIC_USER_ID = "static-user";
+const STATIC_TXS: Transaction[] = [
+  {
+    id: "t1",
+    user_id: STATIC_USER_ID,
+    date: "2026-02-03",
+    merchant: "Trader Joe's",
+    amount: 64.23,
+    category: "Groceries",
+    source: "receipt",
+    receipt_url: null,
+    created_at: "2026-02-03T12:30:00Z"
+  },
+  {
+    id: "t2",
+    user_id: STATIC_USER_ID,
+    date: "2026-02-01",
+    merchant: "Uber",
+    amount: 28.5,
+    category: "Transport",
+    source: "chat",
+    receipt_url: null,
+    created_at: "2026-02-01T18:20:00Z"
+  },
+  {
+    id: "t3",
+    user_id: STATIC_USER_ID,
+    date: "2026-01-29",
+    merchant: "Netflix",
+    amount: 19.99,
+    category: "Subscriptions",
+    source: "chat",
+    receipt_url: null,
+    created_at: "2026-01-29T08:00:00Z"
+  }
+];
 
 export default function DashboardPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -20,7 +57,14 @@ export default function DashboardPage() {
   const [fixedCosts, setFixedCosts] = useState<number>(1500);
 
   useEffect(() => {
+    if (STATIC_MODE) {
+      setUserId(STATIC_USER_ID);
+      setTxs(STATIC_TXS);
+      setStatus("Static mode enabled — using mock data.");
+      return;
+    }
     (async () => {
+      const { supabase } = await import("@/lib/supabaseClient");
       const { data } = await supabase.auth.getUser();
       const id = data.user?.id ?? null;
       setUserId(id);
@@ -30,6 +74,11 @@ export default function DashboardPage() {
 
   async function refreshTransactions() {
     if (!userId) return;
+    if (STATIC_MODE) {
+      setTxs(STATIC_TXS);
+      return;
+    }
+    const { supabase } = await import("@/lib/supabaseClient");
     const { data, error } = await supabase
       .from("transactions")
       .select("*")
@@ -57,7 +106,12 @@ export default function DashboardPage() {
   }, [txs]);
 
   async function uploadReceipt(file: File) {
+    if (STATIC_MODE) {
+      setStatus("Static mode: receipt upload disabled.");
+      return;
+    }
     if (!userId) { setStatus("Please login first."); return; }
+    const { supabase } = await import("@/lib/supabaseClient");
     setStatus("Uploading receipt...");
     const ext = file.name.split(".").pop() || "jpg";
     const path = `${userId}/${Date.now()}.${ext}`;
@@ -87,6 +141,11 @@ export default function DashboardPage() {
     if (!msg) return;
     setChatInput("");
     setChat(prev => [...prev, { role: "user", content: msg }]);
+    if (STATIC_MODE) {
+      setStatus("");
+      setChat(prev => [...prev, { role: "assistant", content: "Static mode: chat disabled. Enable backend to use AI." }]);
+      return;
+    }
     setStatus("Thinking...");
 
     const res = await fetch("/api/chat", {
