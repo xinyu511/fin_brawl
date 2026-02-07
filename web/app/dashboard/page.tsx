@@ -248,23 +248,25 @@ export default function DashboardPage() {
       <div className={`stack ${styles.content}`}>
         <div className="card" id="overview">
           <h3 style={{ marginTop: 0 }}>Overview</h3>
-          <div className="muted">
-            Last 30d spend: <b>${last30Spend.toFixed(2)}</b>
-          </div>
-
-          <div className={`row ${styles.formRow}`}>
-            <div className={`stack ${styles.formField}`}>
-              <label className="muted">Monthly income</label>
+          <div className={`row ${styles.statRow}`}>
+            <div className={styles.statCard}>
+              <div className={styles.statLabel}>Last 30d spend</div>
+              <div className={styles.statValue}>${last30Spend.toFixed(2)}</div>
+            </div>
+            <div className={styles.statCard}>
+              <label className={styles.statLabel}>Monthly income</label>
               <input
                 type="number"
+                className={styles.statInput}
                 value={monthlyIncome}
                 onChange={(e) => setMonthlyIncome(Number(e.target.value))}
               />
             </div>
-            <div className={`stack ${styles.formField}`}>
-              <label className="muted">Fixed costs (rent, utilities)</label>
+            <div className={styles.statCard}>
+              <label className={styles.statLabel}>Fixed costs (rent, utilities)</label>
               <input
                 type="number"
+                className={styles.statInput}
                 value={fixedCosts}
                 onChange={(e) => setFixedCosts(Number(e.target.value))}
               />

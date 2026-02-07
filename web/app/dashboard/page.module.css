@@ -71,6 +71,8 @@
   min-width: 0;
   margin-left: calc(var(--dash-sidebar-width) + 16px);
   padding-left: 16px;
+  max-width: 1200px;
+  margin-right: 24px;
 }
 
 .sidebarTitle {
@@ -79,18 +81,46 @@
   margin: 12px 6px 18px 6px;
   color: var(--dash-ink);
 }
-.formRow {
+.statRow {
   margin-top: 12px;
-  gap: 12px;
+  gap: 16px;
+  align-items: stretch;
 }
 
-.formField {
-  min-width: 260px;
+.statCard {
+  flex: 1;
+  min-width: 180px;
+  min-height: 110px;
+  border: 1px solid var(--dash-border);
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.statLabel {
+  color: var(--dash-muted);
+  font-weight: 600;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dash-ink);
+}
+
+.statInput {
+  width: 100%;
+  max-width: 220px;
+  font-size: 15px;
+  padding: 8px 10px;
 }
 
 .mainRow {
   align-items: stretch;
   gap: 16px;
+  justify-content: flex-start;
 }
 
 .chatCard {
@@ -125,8 +155,10 @@
 }
 
 .transactionsCard {
-  flex: 3;
+  flex: 0 1 600px;
+  width: 90%;
   min-width: 360px;
+  background: #f7f6f2;
 }
 
 .table {
