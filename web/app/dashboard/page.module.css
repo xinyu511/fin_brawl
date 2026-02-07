@@ -130,6 +130,27 @@
 .overviewStage {
   display: grid;
   gap: 18px;
+  padding: 24px;
+  border-radius: 18px;
+  background-image: url("/images/bg5.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+
+.overviewStage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(250, 248, 244, 0.72);
+  border-radius: 18px;
+}
+
+.overviewStage > * {
+  position: relative;
+  z-index: 1;
 }
 
 .overviewArt {
@@ -168,7 +189,7 @@
   height: 230px;
   left: 16px;
   top: 86px;
-  background-image: url("/images/type1.png");
+  background-image: url("/images/type1.jpeg");
   z-index: 1;
 }
 
@@ -177,7 +198,7 @@
   height: 270px;
   left: 150px;
   top: 24px;
-  background-image: url("/images/type2.png");
+  background-image: url("/images/type2.jpeg");
   z-index: 2;
 }
 
@@ -186,7 +207,7 @@
   height: 220px;
   left: 392px;
   top: 72px;
-  background-image: url("/images/type3.png");
+  background-image: url("/images/type3.jpeg");
   z-index: 3;
 }
 
@@ -195,7 +216,7 @@
   height: 130px;
   left: 320px;
   top: 236px;
-  background-image: url("/images/type4.png");
+  background-image: url("/images/type4.jpeg");
   z-index: 4;
 }
 
@@ -204,7 +225,7 @@
   height: 160px;
   left: 74px;
   top: 216px;
-  background-image: url("/images/type5.png");
+  background-image: url("/images/type5.jpeg");
   z-index: 2;
 }
 

@@ -15,6 +15,13 @@ type ChatMsg = { role: "user" | "assistant"; content: string };
 
 const STATIC_MODE = process.env.NEXT_PUBLIC_STATIC_MODE === "true";
 const STATIC_USER_ID = "static-user";
+const DEFAULT_CATEGORIES = [
+  "Groceries",
+  "Housing",
+  "Dining",
+  "Shopping",
+  "Transport",
+] as const;
 const STATIC_TXS: Transaction[] = [
   {
     id: "t1",
@@ -135,6 +142,28 @@ export default function DashboardPage() {
       .reduce((acc, t) => acc + Number(t.amount), 0);
   }, [txs]);
 
+  const topCategories = useMemo(() => {
+    if (!txs.length) return [...DEFAULT_CATEGORIES];
+    const totals = new Map<string, number>();
+    for (const t of txs) {
+      const key = t.category?.trim() || "Other";
+      totals.set(key, (totals.get(key) || 0) + Number(t.amount || 0));
+    }
+    const sorted = [...totals.entries()]
+      .filter(([, v]) => Number.isFinite(v))
+      .sort((a, b) => b[1] - a[1])
+      .map(([k]) => k);
+    const picks = sorted.slice(0, 5);
+    if (picks.length >= 5) return picks;
+    for (const fallback of DEFAULT_CATEGORIES) {
+      if (!picks.includes(fallback)) picks.push(fallback);
+      if (picks.length >= 5) break;
+    }
+    return picks;
+  }, [txs]);
+
+  const artClasses = [styles.artA, styles.artB, styles.artC, styles.artD, styles.artE];
+
   return (
     <div className={`row ${styles.layout} page-body`}>
       <Sidebar active="overview" username={username} status={status} />
@@ -150,21 +179,11 @@ export default function DashboardPage() {
             </div>
             <div className={styles.overviewArt} aria-hidden="true">
               <div className={styles.overviewArtInner}>
-                <div className={`${styles.artBox} ${styles.artA}`}>
-                  <span className={`brand-font ${styles.artLabel}`}>Groceries</span>
-                </div>
-                <div className={`${styles.artBox} ${styles.artB}`}>
-                  <span className={`brand-font ${styles.artLabel}`}>Housing</span>
-                </div>
-                <div className={`${styles.artBox} ${styles.artC}`}>
-                  <span className={`brand-font ${styles.artLabel}`}>Travel</span>
-                </div>
-                <div className={`${styles.artBox} ${styles.artD}`}>
-                  <span className={`brand-font ${styles.artLabel}`}>Shopping</span>
-                </div>
-                <div className={`${styles.artBox} ${styles.artE}`}>
-                  <span className={`brand-font ${styles.artLabel}`}>Dining</span>
-                </div>
+                  {topCategories.map((label, i) => (
+                  <div key={label} className={`${styles.artBox} ${artClasses[i]}`}>
+                    <span className={`brand-font ${styles.artLabel}`}>{label}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
