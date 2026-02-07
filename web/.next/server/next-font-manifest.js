@@ -1,1 +1,1 @@
-self.__NEXT_FONT_MANIFEST="{\"pages\":{},\"app\":{\"/Users/williamzou/Library/CloudStorage/GoogleDrive-yangzou@andrew.cmu.edu/其他计算机/我的笔记本电脑/CMU/fin_brawl/web/app/layout\":[\"static/media/a65324f02aa278dc-s.p.woff2\"]},\"appUsingSizeAdjust\":true,\"pagesUsingSizeAdjust\":false}"
+self.__NEXT_FONT_MANIFEST="{\"pages\":{},\"app\":{\"/Users/xinyuli/Desktop/CMU/tartanhack/fin_brawl/web/app/layout\":[\"static/media/a65324f02aa278dc-s.p.woff2\"]},\"appUsingSizeAdjust\":true,\"pagesUsingSizeAdjust\":false}"

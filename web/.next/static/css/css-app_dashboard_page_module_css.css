@@ -196,6 +196,13 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.page_artBox__KG053:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(30, 40, 50, 0.12);
 }
 
 .page_artA__bvvpN {
@@ -250,6 +257,93 @@
   padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.page_modalBackdrop__wsQka {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 24, 30, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 24px;
+}
+
+.page_modalCard__faexL {
+  width: min(560px, 92vw);
+  background: #fffef9;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+  padding: 18px 18px 16px 18px;
+}
+
+.page_modalHeader__wIdC7 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.page_modalTitle__jKUIf {
+  font-size: 24px;
+}
+
+.page_modalClose__y3eBn {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.page_trendChart__cYen4 {
+  display: grid;
+  grid-gap: 12px;
+  gap: 12px;
+}
+
+.page_trendSvg__AwASg {
+  width: 100%;
+  height: 180px;
+  background: #f2f5fb;
+  border-radius: 12px;
+}
+
+.page_trendLine__aEr_F {
+  fill: none;
+  stroke: #1f6f3f;
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.page_trendAxis__Y1RlN {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-gap: 6px;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.page_trendTick__pEYmw {
+  display: grid;
+  grid-gap: 4px;
+  gap: 4px;
+  text-align: center;
+}
+
+.page_trendDate__uTBNF {
+  color: #48505b;
+}
+
+.page_trendAmount__iESF3 {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  color: #1f2228;
 }
 
 .page_mainRow__nt5t4 {

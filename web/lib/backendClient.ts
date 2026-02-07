@@ -156,6 +156,41 @@ export async function deleteExpense(id: string | number): Promise<{ deleted: boo
   });
 }
 
+export type BackendIncome = {
+  id: string;
+  user_id: string;
+  amount: number;
+  amount_cents: number;
+  source: string;
+  start_date: string | null;
+  end_date: string | null;
+  created_at: string;
+};
+
+export type AddIncomeBody = {
+  amount_cents: number;
+  source: string;
+  start_date?: string | null;
+  end_date?: string | null;
+};
+
+export async function getIncomes(): Promise<BackendIncome[]> {
+  return fetchBackend<BackendIncome[]>("/incomes?limit=200");
+}
+
+export async function addIncome(body: AddIncomeBody): Promise<{ id: number }> {
+  return fetchBackend<{ id: number }>("/incomes", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function deleteIncome(id: string | number): Promise<{ deleted: boolean }> {
+  return fetchBackend<{ deleted: boolean }>(`/incomes/${id}`, {
+    method: "DELETE",
+  });
+}
+
 export type Summary = {
   year_month: string;
   monthly_spend_cents: number;

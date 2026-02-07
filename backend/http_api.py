@@ -19,7 +19,7 @@ def _cors_headers() -> list[tuple[str, str]]:
     ]
 
 
-def _json_response(start_response, status_code: int, body: Dict[str, Any]) -> list[bytes]:
+def _json_response(start_response, status_code: int, body: Any) -> list[bytes]:
     status_map = {
         200: "200 OK",
         201: "201 Created",
@@ -341,6 +341,94 @@ def app(environ, start_response):
                 return _json_response(
                     start_response, 200, {"deleted": cur.rowcount > 0}
                 )
+
+        if path == "/incomes":
+            token = _bearer_token(environ)
+            if token is None:
+                return _json_response(start_response, 401, {"error": "missing_auth"})
+            user_id = verify_auth_token(token)
+            if user_id is None:
+                return _json_response(start_response, 401, {"error": "invalid_token"})
+            if method == "GET":
+                limit = _parse_limit(environ)
+                with session() as conn:
+                    rows = conn.execute(
+                        """
+                        SELECT id, user_id, amount_cents, source, start_date, end_date, created_at
+                        FROM incomes
+                        WHERE user_id = ?
+                        ORDER BY created_at DESC
+                        LIMIT ?
+                        """,
+                        (user_id, limit),
+                    ).fetchall()
+                return _json_response(
+                    start_response,
+                    200,
+                    [
+                        {
+                            "id": str(r["id"]),
+                            "user_id": str(r["user_id"]),
+                            "amount": float(r["amount_cents"]) / 100.0,
+                            "amount_cents": int(r["amount_cents"]),
+                            "source": r["source"],
+                            "start_date": r["start_date"],
+                            "end_date": r["end_date"],
+                            "created_at": r["created_at"],
+                        }
+                        for r in rows
+                    ],
+                )
+            if method == "POST":
+                body, err = _read_json(environ)
+                if body is None:
+                    return _json_response(start_response, 400, {"error": err})
+                amount_cents = body.get("amount_cents")
+                source = body.get("source")
+                start_date = body.get("start_date")
+                end_date = body.get("end_date")
+                if (
+                    not isinstance(amount_cents, int)
+                    or amount_cents <= 0
+                    or not isinstance(source, str)
+                    or not source.strip()
+                    or (start_date is not None and not isinstance(start_date, str))
+                    or (end_date is not None and not isinstance(end_date, str))
+                ):
+                    return _json_response(start_response, 400, {"error": "missing_fields"})
+                with session() as conn:
+                    cur = conn.execute(
+                        """
+                        INSERT INTO incomes (user_id, amount_cents, source, start_date, end_date)
+                        VALUES (?, ?, ?, ?, ?)
+                        """,
+                        (user_id, amount_cents, source.strip(), start_date, end_date),
+                    )
+                    conn.commit()
+                    return _json_response(start_response, 201, {"id": int(cur.lastrowid)})
+            return _json_response(start_response, 405, {"error": "method_not_allowed"})
+
+        if path.startswith("/incomes/"):
+            token = _bearer_token(environ)
+            if token is None:
+                return _json_response(start_response, 401, {"error": "missing_auth"})
+            user_id = verify_auth_token(token)
+            if user_id is None:
+                return _json_response(start_response, 401, {"error": "invalid_token"})
+            if method != "DELETE":
+                return _json_response(start_response, 405, {"error": "method_not_allowed"})
+            tail = path.rsplit("/", 1)[-1]
+            try:
+                income_id = int(tail)
+            except ValueError:
+                return _json_response(start_response, 400, {"error": "invalid_id"})
+            with session() as conn:
+                cur = conn.execute(
+                    "DELETE FROM incomes WHERE id = ? AND user_id = ?",
+                    (income_id, user_id),
+                )
+                conn.commit()
+                return _json_response(start_response, 200, {"deleted": cur.rowcount > 0})
 
         return _json_response(start_response, 404, {"error": "not_found"})
     except Exception:

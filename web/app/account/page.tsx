@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMe, getProfile, updateProfile } from "@/lib/backendClient";
+import {
+  addIncome,
+  deleteIncome,
+  getIncomes,
+  getMe,
+  getProfile,
+  updateProfile,
+  type BackendIncome,
+} from "@/lib/backendClient";
 import styles from "../dashboard/page.module.css";
 import accountStyles from "./page.module.css";
 import Sidebar from "../dashboard/Sidebar";
@@ -30,15 +38,55 @@ const emptyForm: ProfileForm = {
   location: "",
 };
 
+type IncomeForm = {
+  amount: string;
+  source: string;
+  startDate: string;
+  endDate: string;
+};
+
+const emptyIncomeForm: IncomeForm = {
+  amount: "",
+  source: "",
+  startDate: "",
+  endDate: "",
+};
+
+function formatMoney(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currency || "USD",
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return `$${amount.toFixed(2)}`;
+  }
+}
+
 export default function AccountPage() {
   const [form, setForm] = useState<ProfileForm>(emptyForm);
-  const [status, setStatus] = useState<Status>({ kind: "idle", text: "" });
+  const [profileStatus, setProfileStatus] = useState<Status>({
+    kind: "idle",
+    text: "",
+  });
+  const [incomeStatus, setIncomeStatus] = useState<Status>({
+    kind: "idle",
+    text: "",
+  });
+  const [incomeForm, setIncomeForm] = useState<IncomeForm>(emptyIncomeForm);
+  const [incomes, setIncomes] = useState<BackendIncome[]>([]);
+  const [deletingIncomeId, setDeletingIncomeId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      setStatus({ kind: "loading", text: "Loading profile..." });
+      setProfileStatus({ kind: "loading", text: "Loading profile..." });
       try {
-        const [me, profileResp] = await Promise.all([getMe(), getProfile()]);
+        const [me, profileResp, incomeRows] = await Promise.all([
+          getMe(),
+          getProfile(),
+          getIncomes(),
+        ]);
         const p = profileResp.profile;
         setForm({
           username: me.username,
@@ -50,24 +98,37 @@ export default function AccountPage() {
           ageRange: p.age_range ?? "",
           location: p.location ?? "",
         });
-        setStatus({ kind: "idle", text: "" });
+        setIncomes(incomeRows);
+        setProfileStatus({ kind: "idle", text: "" });
+        setIncomeStatus({ kind: "idle", text: "" });
       } catch (e) {
-        setStatus({
+        const message =
+          e instanceof Error ? e.message : "Failed to load profile.";
+        setProfileStatus({
           kind: "error",
-          text: e instanceof Error ? e.message : "Failed to load profile.",
+          text: message,
         });
+        setIncomeStatus({ kind: "error", text: message });
       }
     })();
   }, []);
 
+  async function refreshIncomes() {
+    const rows = await getIncomes();
+    setIncomes(rows);
+  }
+
   async function onSave() {
-    setStatus({ kind: "loading", text: "Saving..." });
+    setProfileStatus({ kind: "loading", text: "Saving..." });
     try {
       const netWorthTrim = form.netWorth.trim();
       const netWorthCents =
         netWorthTrim === "" ? null : Math.round(Number(netWorthTrim) * 100);
       if (netWorthTrim !== "" && Number.isNaN(netWorthCents)) {
-        setStatus({ kind: "error", text: "Net worth must be a valid number." });
+        setProfileStatus({
+          kind: "error",
+          text: "Net worth must be a valid number.",
+        });
         return;
       }
       const resp = await updateProfile({
@@ -87,13 +148,66 @@ export default function AccountPage() {
         riskTolerance: p.risk_tolerance ?? "",
         financialGoal: p.financial_goal ?? "",
         timeHorizon: p.time_horizon ?? "",
+        ageRange: p.age_range ?? "",
+        location: p.location ?? "",
       }));
-      setStatus({ kind: "saved", text: "Saved." });
+      setProfileStatus({ kind: "saved", text: "Saved." });
     } catch (e) {
-      setStatus({
+      setProfileStatus({
         kind: "error",
         text: e instanceof Error ? e.message : "Failed to save profile.",
       });
+    }
+  }
+
+  async function onAddIncome() {
+    const amountText = incomeForm.amount.trim().replace(/,/g, "");
+    const source = incomeForm.source.trim();
+    const amount = Number.parseFloat(amountText);
+    if (!amountText || !Number.isFinite(amount) || amount <= 0) {
+      setIncomeStatus({
+        kind: "error",
+        text: "Income amount must be a positive number.",
+      });
+      return;
+    }
+    if (!source) {
+      setIncomeStatus({ kind: "error", text: "Income source is required." });
+      return;
+    }
+    setIncomeStatus({ kind: "loading", text: "Adding income..." });
+    try {
+      await addIncome({
+        amount_cents: Math.round(amount * 100),
+        source,
+        start_date: incomeForm.startDate || null,
+        end_date: incomeForm.endDate || null,
+      });
+      setIncomeForm(emptyIncomeForm);
+      await refreshIncomes();
+      setIncomeStatus({ kind: "saved", text: "Income added." });
+    } catch (e) {
+      setIncomeStatus({
+        kind: "error",
+        text: e instanceof Error ? e.message : "Failed to add income.",
+      });
+    }
+  }
+
+  async function onDeleteIncome(id: string) {
+    setDeletingIncomeId(id);
+    setIncomeStatus({ kind: "loading", text: "Deleting income..." });
+    try {
+      await deleteIncome(id);
+      await refreshIncomes();
+      setIncomeStatus({ kind: "saved", text: "Income deleted." });
+    } catch (e) {
+      setIncomeStatus({
+        kind: "error",
+        text: e instanceof Error ? e.message : "Failed to delete income.",
+      });
+    } finally {
+      setDeletingIncomeId(null);
     }
   }
 
@@ -102,7 +216,7 @@ export default function AccountPage() {
       <Sidebar
         active="account"
         username={form.username || null}
-        status={status.text}
+        status={profileStatus.text || incomeStatus.text}
         title="Account"
       />
       <div className={`stack ${styles.content}`}>
@@ -211,11 +325,114 @@ export default function AccountPage() {
             </div>
 
             <div className={accountStyles.formActions}>
-              <button onClick={onSave} disabled={status.kind === "loading"}>
+              <button
+                onClick={onSave}
+                disabled={profileStatus.kind === "loading"}
+              >
                 Save
               </button>
-              {status.text && <div className="muted">{status.text}</div>}
+              {profileStatus.text && <div className="muted">{profileStatus.text}</div>}
             </div>
+          </div>
+
+          <div className={accountStyles.sectionDivider} />
+
+          <h3>Income</h3>
+          <p className="muted">
+            Add monthly income sources to your account. You can delete entries
+            from the list at any time.
+          </p>
+          <div className={accountStyles.incomeGrid}>
+            <div className={accountStyles.field}>
+              <label>Monthly amount</label>
+              <input
+                type="number"
+                placeholder="e.g., 4500"
+                value={incomeForm.amount}
+                onChange={(e) =>
+                  setIncomeForm((prev) => ({ ...prev, amount: e.target.value }))
+                }
+              />
+            </div>
+            <div className={accountStyles.field}>
+              <label>Source</label>
+              <input
+                placeholder="e.g., Salary"
+                value={incomeForm.source}
+                onChange={(e) =>
+                  setIncomeForm((prev) => ({ ...prev, source: e.target.value }))
+                }
+              />
+            </div>
+            <div className={accountStyles.field}>
+              <label>Start date (optional)</label>
+              <input
+                type="date"
+                value={incomeForm.startDate}
+                onChange={(e) =>
+                  setIncomeForm((prev) => ({ ...prev, startDate: e.target.value }))
+                }
+              />
+            </div>
+            <div className={accountStyles.field}>
+              <label>End date (optional)</label>
+              <input
+                type="date"
+                value={incomeForm.endDate}
+                onChange={(e) =>
+                  setIncomeForm((prev) => ({ ...prev, endDate: e.target.value }))
+                }
+              />
+            </div>
+            <div className={accountStyles.formActions}>
+              <button
+                onClick={onAddIncome}
+                disabled={incomeStatus.kind === "loading"}
+              >
+                Add income
+              </button>
+              {incomeStatus.text && <div className="muted">{incomeStatus.text}</div>}
+            </div>
+          </div>
+
+          <div className={accountStyles.listWrap}>
+            {incomes.length === 0 ? (
+              <div className="muted">No income records yet.</div>
+            ) : (
+              <table className={accountStyles.incomeTable}>
+                <thead>
+                  <tr>
+                    <th>Source</th>
+                    <th>Amount</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Added</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {incomes.map((income) => (
+                    <tr key={income.id}>
+                      <td>{income.source}</td>
+                      <td>{formatMoney(income.amount, form.currency)}</td>
+                      <td>{income.start_date || "-"}</td>
+                      <td>{income.end_date || "-"}</td>
+                      <td>{income.created_at?.slice(0, 10) || "-"}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className={accountStyles.deleteButton}
+                          disabled={deletingIncomeId === income.id}
+                          onClick={() => onDeleteIncome(income.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>
