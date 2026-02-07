@@ -41,6 +41,79 @@ def add_expense(
     conn.commit()
     return int(cur.lastrowid)
 
+def update_income(
+    conn: sqlite3.Connection,
+    income_id: int,
+    *,
+    amount_cents: Optional[int] = None,
+    source: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+) -> bool:
+    fields: List[str] = []
+    params: List[object] = []
+    if amount_cents is not None:
+        fields.append("amount_cents = ?")
+        params.append(int(amount_cents))
+    if source is not None:
+        fields.append("source = ?")
+        params.append(str(source))
+    if start_date is not None:
+        fields.append("start_date = ?")
+        params.append(start_date)
+    if end_date is not None:
+        fields.append("end_date = ?")
+        params.append(end_date)
+    if not fields:
+        return False
+    params.append(income_id)
+    cur = conn.execute(f"UPDATE incomes SET {', '.join(fields)} WHERE id = ?", params)
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def delete_income(conn: sqlite3.Connection, income_id: int) -> bool:
+    cur = conn.execute("DELETE FROM incomes WHERE id = ?", (income_id,))
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def update_expense(
+    conn: sqlite3.Connection,
+    expense_id: int,
+    *,
+    amount_cents: Optional[int] = None,
+    category: Optional[str] = None,
+    occurred_at_iso: Optional[str] = None,
+    note: Optional[Optional[str]] = None,
+) -> bool:
+    fields: List[str] = []
+    params: List[object] = []
+    if amount_cents is not None:
+        fields.append("amount_cents = ?")
+        params.append(int(amount_cents))
+    if category is not None:
+        fields.append("category = ?")
+        params.append(str(category))
+    if occurred_at_iso is not None:
+        fields.append("occurred_at = ?")
+        params.append(occurred_at_iso)
+    # note can be explicitly set to None (NULL), so we guard with a sentinel: use 'note' parameter presence
+    if note is not None or note is None:
+        fields.append("note = ?")
+        params.append(note)
+    if not fields:
+        return False
+    params.append(expense_id)
+    cur = conn.execute(f"UPDATE expenses SET {', '.join(fields)} WHERE id = ?", params)
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def delete_expense(conn: sqlite3.Connection, expense_id: int) -> bool:
+    cur = conn.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
+    conn.commit()
+    return cur.rowcount > 0
 
 def monthly_spend(conn: sqlite3.Connection, user_id: int, year_month: str) -> int:
     row = conn.execute(

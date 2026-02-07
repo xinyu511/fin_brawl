@@ -28,3 +28,9 @@ def get_recommendations(
     ).fetchall()
     return [(int(r["id"]), r["content"], r["created_at"]) for r in rows]
 
+
+def delete_recommendation(conn: sqlite3.Connection, reco_id: int) -> bool:
+    cur = conn.execute("DELETE FROM recommendation_history WHERE id = ?", (reco_id,))
+    conn.commit()
+    return cur.rowcount > 0
+
