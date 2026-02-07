@@ -41,6 +41,11 @@ def init_db(db_path: Optional[Path] = None, schema_path: Optional[Path] = None) 
     conn = connect(db_path)
     try:
         run_schema(conn, schema_path)
+        # Lightweight migration: ensure expenses.note exists for older DBs.
+        cols = [row["name"] for row in conn.execute("PRAGMA table_info(expenses)")]
+        if "note" not in cols:
+            conn.execute("ALTER TABLE expenses ADD COLUMN note TEXT")
+            conn.commit()
     finally:
         conn.close()
 
@@ -52,4 +57,3 @@ def session(db_path: Optional[Path] = None) -> Iterator[sqlite3.Connection]:
         yield conn
     finally:
         conn.close()
-

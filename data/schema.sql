@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   amount_cents      INTEGER NOT NULL,
   category          TEXT NOT NULL,
   occurred_at       TEXT NOT NULL,
+  note              TEXT,
   merchant          TEXT,
   source            TEXT,
   receipt_url       TEXT,

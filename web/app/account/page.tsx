@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getMe, getProfile, updateProfile } from "@/lib/backendClient";
 import styles from "../dashboard/page.module.css";
+import accountStyles from "./page.module.css";
 import Sidebar from "../dashboard/Sidebar";
 
 type Status = { kind: "idle" | "loading" | "error" | "saved"; text: string };
@@ -105,93 +106,111 @@ export default function AccountPage() {
         title="Account"
       />
       <div className={`stack ${styles.content}`}>
-        <div className="card">
+        <div className={`card ${accountStyles.accountCard}`}>
           <h3 style={{ marginTop: 0 }}>Personal Information</h3>
           <p className="muted">
             Update your financial profile. Changes are saved to your account.
           </p>
-          <div className="stack">
-            <label className="muted">Username</label>
-            <input value={form.username} disabled />
+          <div className={accountStyles.formGrid}>
+            <div className={accountStyles.field}>
+              <label>Username</label>
+              <input value={form.username} disabled />
+            </div>
 
-            <label className="muted">Currency</label>
-            <input
-              value={form.currency}
-              onChange={(e) => setForm({ ...form, currency: e.target.value })}
-            />
+            <div className={accountStyles.field}>
+              <label>Currency</label>
+              <input
+                value={form.currency}
+                onChange={(e) => setForm({ ...form, currency: e.target.value })}
+              />
+            </div>
 
-            <label className="muted">Net worth (USD)</label>
-            <input
-              type="number"
-              placeholder="e.g., 25000"
-              value={form.netWorth}
-              onChange={(e) => setForm({ ...form, netWorth: e.target.value })}
-            />
+            <div className={accountStyles.field}>
+              <label>Net worth (USD)</label>
+              <input
+                type="number"
+                placeholder="e.g., 25000"
+                value={form.netWorth}
+                onChange={(e) => setForm({ ...form, netWorth: e.target.value })}
+              />
+            </div>
 
-            <label className="muted">Risk tolerance</label>
-            <select
-              value={form.riskTolerance}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  riskTolerance: e.target.value as ProfileForm["riskTolerance"],
-                })
-              }
-            >
-              <option value="">Select...</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
+            <div className={accountStyles.field}>
+              <label>Risk tolerance</label>
+              <select
+                value={form.riskTolerance}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    riskTolerance:
+                      e.target.value as ProfileForm["riskTolerance"],
+                  })
+                }
+              >
+                <option value="">Select...</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
 
-            <label className="muted">Financial goal</label>
-            <select
-              value={form.financialGoal}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  financialGoal: e.target.value as ProfileForm["financialGoal"],
-                })
-              }
-            >
-              <option value="">Select...</option>
-              <option value="save">Save</option>
-              <option value="invest">Invest</option>
-              <option value="retire">Retire</option>
-              <option value="reduce_debt">Reduce debt</option>
-            </select>
+            <div className={accountStyles.field}>
+              <label>Financial goal</label>
+              <select
+                value={form.financialGoal}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    financialGoal:
+                      e.target.value as ProfileForm["financialGoal"],
+                  })
+                }
+              >
+                <option value="">Select...</option>
+                <option value="save">Save</option>
+                <option value="invest">Invest</option>
+                <option value="retire">Retire</option>
+                <option value="reduce_debt">Reduce debt</option>
+              </select>
+            </div>
 
-            <label className="muted">Time horizon</label>
-            <select
-              value={form.timeHorizon}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  timeHorizon: e.target.value as ProfileForm["timeHorizon"],
-                })
-              }
-            >
-              <option value="">Select...</option>
-              <option value="short">Short</option>
-              <option value="medium">Medium</option>
-              <option value="long">Long</option>
-            </select>
+            <div className={accountStyles.field}>
+              <label>Time horizon</label>
+              <select
+                value={form.timeHorizon}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    timeHorizon: e.target.value as ProfileForm["timeHorizon"],
+                  })
+                }
+              >
+                <option value="">Select...</option>
+                <option value="short">Short</option>
+                <option value="medium">Medium</option>
+                <option value="long">Long</option>
+              </select>
+            </div>
 
-            <label className="muted">Age range</label>
-            <input
-              placeholder="e.g., 25-34"
-              value={form.ageRange}
-              onChange={(e) => setForm({ ...form, ageRange: e.target.value })}
-            />
+            <div className={accountStyles.field}>
+              <label>Age range</label>
+              <input
+                placeholder="e.g., 25-34"
+                value={form.ageRange}
+                onChange={(e) => setForm({ ...form, ageRange: e.target.value })}
+              />
+            </div>
 
-            <label className="muted">Location</label>
-            <input
-              placeholder="e.g., PA, US"
-              value={form.location}
-              onChange={(e) => setForm({ ...form, location: e.target.value })}
-            />
+            <div className={accountStyles.field}>
+              <label>Location</label>
+              <input
+                placeholder="e.g., PA, US"
+                value={form.location}
+                onChange={(e) => setForm({ ...form, location: e.target.value })}
+              />
+            </div>
 
-            <div className="row">
+            <div className={accountStyles.formActions}>
               <button onClick={onSave} disabled={status.kind === "loading"}>
                 Save
               </button>

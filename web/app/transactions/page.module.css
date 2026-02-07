@@ -1,7 +1,7 @@
 .layout {
-  --dash-sidebar-width: 240px;
+  --dash-sidebar-width: 210px;
   --dash-gap: 16px;
-  --dash-border: #e9e9ef;
+  --dash-border: transparent;
   --dash-ink: #1d1d25;
   --dash-muted: #6c6c7a;
   gap: var(--dash-gap);
@@ -19,6 +19,7 @@
   padding-left: 16px;
   max-width: 1200px;
   margin-right: 24px;
+  background: #fdf9ec;
 }
 
 .topGrid {
@@ -42,7 +43,7 @@
   background: transparent;
   border-radius: 18px;
   padding: 18px;
-  border: 1px solid var(--dash-border);
+  border: none;
   display: grid;
   gap: 12px;
   margin-left: 12px;
@@ -67,7 +68,7 @@
   background: #ffffff;
   border-radius: 14px;
   padding: 12px;
-  border: 1px solid var(--dash-border);
+  border: none;
   display: grid;
   gap: 6px;
   min-height: 90px;
@@ -97,7 +98,7 @@
   background: transparent;
   border-radius: 18px;
   padding: 16px;
-  border: 1px solid var(--dash-border);
+  border: none;
   display: grid;
   gap: 10px;
   min-height: 380px;
@@ -105,10 +106,10 @@
 }
 
 .pieCard {
-  background: #f7f6f2;
+  background: #ffffff;
   border-radius: 18px;
   padding: 16px;
-  border: 1px solid var(--dash-border);
+  border: none;
   display: grid;
   gap: 12px;
   min-height: 260px;
@@ -347,7 +348,7 @@
   flex: 1;
   min-width: 180px;
   min-height: 110px;
-  border: 1px solid var(--dash-border);
+  border: none;
   background: #fff;
   border-radius: 12px;
   padding: 12px;
@@ -369,13 +370,14 @@
 .transactionsCard {
   width: 90%;
   min-width: 360px;
-  background: #f7f6f2;
+  background: #ffffff;
   height: 480px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   margin-left: 30px;
   margin-bottom: 0;
+  border: none;
 }
 
 .filterRow {

@@ -1,5 +1,5 @@
 .layout {
-  --dash-sidebar-width: 240px;
+  --dash-sidebar-width: 210px;
   --dash-gap: 16px;
   --dash-border: #e9e9ef;
   --dash-soft: #f7f7fb;
@@ -19,7 +19,7 @@
   top: 0;
   left: 0;
   border: 1px solid var(--dash-border);
-  background: #d4cbbf;
+  background: #e0e5b4;
   height: 100vh;
   align-self: stretch;
   z-index: 10;
