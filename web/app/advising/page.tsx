@@ -102,7 +102,7 @@ export default function AdvisingPage() {
   }
 
   return (
-    <div className={`row ${styles.layout} page-body`}>
+    <div className={`row ${styles.layout} page-body page--advising`}>
       <Sidebar active="advising" username={username} status={status} />
 
       <div className={`stack ${styles.content}`}>

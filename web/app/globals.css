@@ -14,7 +14,7 @@ html, body { height: 100%; }
   font-style: normal;
   font-display: swap;
 }
-body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 0; background: #f5edd1; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 0; background: #fdf9ec; }
 .brand-font { font-family: "Basheq Vintage", "Comic Sans MS", "Comic Neue", cursive; }
 .greeting-font { font-family: "Dropline", "Basheq Vintage", "Comic Sans MS", cursive; }
 a { color: inherit; }
@@ -23,7 +23,9 @@ a { color: inherit; }
 .page-body { padding: 16px 16px 16px 0; width: 100%; }
 .page--dashboard { height: 100%; overflow: hidden; margin: 0; padding: 0; }
 .page--dashboard .page-body { padding: 0; margin: 0; width: 100vw; }
-.card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; }
+.page--advising { background: #f5edd1; min-height: 100vh; }
+.page--advising .page-body { background: #f5edd1; }
+.card { border: none; border-radius: 12px; padding: 16px; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; }
 input, button, textarea, select { font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid #d1d5db; }
 button { cursor: pointer; }

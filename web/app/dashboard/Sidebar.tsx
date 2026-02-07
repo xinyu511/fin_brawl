@@ -46,7 +46,9 @@ export default function Sidebar({ active, username, status, title }: SidebarProp
         <div className={`muted ${styles.sidebarMeta}`}>
           User: {username ?? "Not logged in"}
         </div>
-        <button onClick={signOut}>Logout</button>
+        <button className={`${styles.tab} ${styles.tabButton}`} onClick={signOut}>
+          Logout
+        </button>
         {showStatus && <div className={`muted ${styles.sidebarStatus}`}>{status}</div>}
       </div>
     </aside>

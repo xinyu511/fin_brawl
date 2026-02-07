@@ -18,7 +18,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  border: 1px solid var(--dash-border);
+  border: none;
   background: #e0e5b4;
   height: 100vh;
   align-self: stretch;
@@ -41,6 +41,14 @@
   border-radius: 10px;
   transition: background 140ms ease, color 140ms ease, transform 140ms ease;
   text-decoration: none;
+}
+
+.tabButton {
+  width: 100%;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  font: inherit;
 }
 
 .tab:hover {
