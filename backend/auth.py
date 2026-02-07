@@ -70,3 +70,26 @@ def signin(conn: sqlite3.Connection, username: str, password: str) -> Optional[i
         return int(row["id"])
     return None
 
+
+def set_password(conn: sqlite3.Connection, user_id: int, new_password: str) -> bool:
+    pw_hash = hash_password(new_password)
+    cur = conn.execute(
+        "UPDATE users SET password_hash = ? WHERE id = ?",
+        (pw_hash, user_id),
+    )
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def set_username(conn: sqlite3.Connection, user_id: int, new_username: str) -> bool:
+    try:
+        cur = conn.execute(
+            "UPDATE users SET username = ? WHERE id = ?",
+            (new_username, user_id),
+        )
+        conn.commit()
+        return cur.rowcount > 0
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        return False
+
