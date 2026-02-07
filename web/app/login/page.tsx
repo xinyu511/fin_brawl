@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { clearToken, login, register, setToken } from "@/lib/backendClient";
+import { login, register, setToken } from "@/lib/backendClient";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -11,8 +11,13 @@ export default function LoginPage() {
   async function signUp() {
     setStatus("Signing up...");
     try {
-      await register(username, password);
+      const { token: signupToken } = await register(username, password);
       setStatus("Signed up! Redirecting...");
+      if (signupToken) {
+        setToken(signupToken);
+        window.location.href = "/dashboard";
+        return;
+      }
       const { token } = await login(username, password);
       setToken(token);
       window.location.href = "/dashboard";
@@ -31,11 +36,6 @@ export default function LoginPage() {
     } catch (e: unknown) {
       setStatus(e instanceof Error ? e.message : "Sign in failed.");
     }
-  }
-
-  function signOut() {
-    clearToken();
-    setStatus("Signed out.");
   }
 
   return (
@@ -57,20 +57,9 @@ export default function LoginPage() {
           <div className="row">
             <button onClick={signIn}>Sign in</button>
             <button onClick={signUp}>Sign up</button>
-            <button onClick={signOut}>Sign out</button>
           </div>
           <div className="muted">{status}</div>
         </div>
-      </div>
-
-      <div className="card">
-        <h4 style={{ marginTop: 0 }}>Next</h4>
-        <p className="muted" style={{ marginBottom: 12 }}>
-          After signing in, go to the dashboard to upload receipts and chat.
-        </p>
-        <a href="/dashboard">
-          <button>Go to Dashboard</button>
-        </a>
       </div>
     </div>
   );

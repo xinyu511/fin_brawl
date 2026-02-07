@@ -1,0 +1,198 @@
+/*!*************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[7].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[7].use[3]!./app/dashboard/page.module.css ***!
+  \*************************************************************************************************************************************************************************************************************************************************************************/
+.page_layout__WuZzx {
+  --dash-sidebar-width: 240px;
+  --dash-gap: 16px;
+  --dash-border: #e9e9ef;
+  --dash-soft: #f7f7fb;
+  --dash-ink: #1d1d25;
+  --dash-muted: #6c6c7a;
+  gap: var(--dash-gap);
+  align-items: flex-start;
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  justify-content: flex-start;
+}
+
+.page_sidebar__eZho5 {
+  width: var(--dash-sidebar-width);
+  position: fixed;
+  top: 0;
+  left: 0;
+  border: 1px solid var(--dash-border);
+  background: #d4cbbf;
+  height: 100vh;
+  align-self: stretch;
+  z-index: 10;
+  border-radius: 0;
+}
+
+.page_sidebarNav__0rWjP {
+  gap: 16px;
+}
+
+.page_tab__Mr1Ep {
+  background: transparent;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 10px 4px;
+  padding: 12px 6px;
+  border-radius: 10px;
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+  text-decoration: none;
+}
+
+.page_tab__Mr1Ep:hover {
+  background: #ffffff;
+  color: #3b3b4b;
+  transform: translateX(2px);
+}
+
+.page_tabActive__zGFVE {
+  background: #f5f4f1;
+  color: #1e1e28;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.page_sidebarMeta__3HstB {
+  margin-top: 12px;
+  color: var(--dash-muted);
+}
+
+.page_sidebarStatus__gb9EE {
+  margin-top: 8px;
+  color: var(--dash-muted);
+}
+
+.page_content__pGcr2 {
+  flex: 1 1;
+  min-width: 0;
+  margin-left: calc(var(--dash-sidebar-width) + 16px);
+  padding-left: 16px;
+  max-width: 1200px;
+  margin-right: 24px;
+}
+
+.page_sidebarTitle__CXkWp {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 12px 6px 18px 6px;
+  color: var(--dash-ink);
+}
+.page_statRow__zHW0r {
+  margin-top: 12px;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.page_statCard__6lyWq {
+  flex: 1 1;
+  min-width: 180px;
+  min-height: 110px;
+  border: 1px solid var(--dash-border);
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  grid-gap: 8px;
+  gap: 8px;
+}
+
+.page_statLabel__Yce6m {
+  color: var(--dash-muted);
+  font-weight: 600;
+}
+
+.page_statValue__zAiXI {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dash-ink);
+}
+
+.page_statInput__n_li_ {
+  width: 100%;
+  max-width: 220px;
+  font-size: 15px;
+  padding: 8px 10px;
+}
+
+.page_mainRow__nt5t4 {
+  align-items: stretch;
+  gap: 16px;
+  justify-content: flex-start;
+}
+
+.page_chatCard__b8ZbE {
+  flex: 2 1;
+  min-width: 300px;
+}
+
+.page_chatLog__tZUWT {
+  height: 260px;
+  overflow: auto;
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+  padding: 10px;
+  background: #fff;
+}
+
+.page_chatItem__lnqiD {
+  margin-bottom: 10px;
+}
+
+.page_chatInputRow__Z2dZN {
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.page_chatInput__EhLyc {
+  flex: 1 1;
+}
+
+.page_chatTip__UzhsF {
+  margin-top: 8px;
+}
+
+.page_transactionsCard__vIQck {
+  flex: 0 1 600px;
+  width: 90%;
+  min-width: 360px;
+  background: #f7f6f2;
+}
+
+.page_table__p2B7W {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.page_table__p2B7W th,
+.page_table__p2B7W td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--dash-border);
+}
+
+@media (max-width: 980px) {
+  .page_layout__WuZzx {
+    flex-direction: column;
+  }
+
+  .page_sidebar__eZho5 {
+    width: 100%;
+    position: static;
+  }
+
+  .page_mainRow__nt5t4 {
+    flex-direction: column;
+  }
+
+  .page_chatCard__b8ZbE,
+  .page_transactionsCard__vIQck {
+    min-width: 0;
+  }
+}
+

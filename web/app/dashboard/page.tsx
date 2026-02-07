@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  clearToken,
   getExpenses,
   getMe,
   getToken,
@@ -66,6 +67,7 @@ function toTransaction(t: BackendTransaction): Transaction {
 
 export default function DashboardPage() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [status, setStatus] = useState<string>("");
   const [chatInput, setChatInput] = useState("");
@@ -83,6 +85,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (STATIC_MODE) {
       setUserId(STATIC_USER_ID);
+      setUsername("static-user");
       setTxs(STATIC_TXS);
       setStatus("Static mode enabled — using mock data.");
       return;
@@ -96,12 +99,19 @@ export default function DashboardPage() {
       try {
         const me = await getMe();
         setUserId(String(me.user_id));
+        setUsername(me.username);
       } catch {
         setUserId(null);
+        setUsername(null);
         setStatus("Session expired or invalid. Go to /login to sign in.");
       }
     })();
   }, []);
+
+  function signOut() {
+    clearToken();
+    window.location.href = "/";
+  }
 
   async function refreshTransactions() {
     if (!userId) return;
@@ -240,8 +250,9 @@ export default function DashboardPage() {
           </a>
         </div>
         <div className={`muted ${styles.sidebarMeta}`}>
-          User: {userId ?? "Not logged in"}
+          User: {username ?? "Not logged in"}
         </div>
+        <button onClick={signOut}>Logout</button>
         {status && <div className={`muted ${styles.sidebarStatus}`}>{status}</div>}
       </aside>
 

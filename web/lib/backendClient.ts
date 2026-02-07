@@ -28,7 +28,8 @@ export function clearToken(): void {
 }
 
 export type BackendAuth = { token: string; user_id: number };
-export type BackendMe = { user_id: number };
+export type BackendMe = { user_id: number; username: string };
+export type BackendRegister = { user_id: number; token?: string };
 
 export async function fetchBackend<T = unknown>(
   path: string,
@@ -45,7 +46,11 @@ export async function fetchBackend<T = unknown>(
   const res = await fetch(`${base}${path}`, { ...init, headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error((err as { detail?: string }).detail || res.statusText);
+    const msg =
+      (err as { detail?: string; error?: string }).detail ||
+      (err as { detail?: string; error?: string }).error ||
+      res.statusText;
+    throw new Error(msg);
   }
   if (res.status === 204 || res.headers.get("content-length") === "0") return undefined as T;
   return res.json() as Promise<T>;
@@ -60,8 +65,8 @@ export async function login(username: string, password: string): Promise<Backend
   return data;
 }
 
-export async function register(username: string, password: string): Promise<BackendMe> {
-  const data = await fetchBackend<BackendMe>("/auth/register", {
+export async function register(username: string, password: string): Promise<BackendRegister> {
+  const data = await fetchBackend<BackendRegister>("/auth/register", {
     method: "POST",
     body: JSON.stringify({ username, password }),
     token: null,

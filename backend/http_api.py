@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Tuple
 from wsgiref.simple_server import make_server, WSGIServer
 from wsgiref.util import request_uri
 
-from .db import session
+from .db import get_default_db_path, init_db, session
 from .users import register_user, login_user, verify_auth_token
 from .onboarding import update_financial_profile
 
@@ -112,7 +112,10 @@ def app(environ, start_response):
                 user_id = register_user(conn, username, password)
                 if user_id is None:
                     return _json_response(start_response, 400, {"error": "username_taken"})
-                return _json_response(start_response, 201, {"user_id": user_id})
+                token = login_user(conn, username, password)
+                if token is None:
+                    return _json_response(start_response, 500, {"error": "signup_login_failed"})
+                return _json_response(start_response, 201, {"user_id": user_id, "token": token})
 
         if path == "/auth/login":
             if method != "POST":
@@ -141,7 +144,16 @@ def app(environ, start_response):
             uid = verify_auth_token(token)
             if uid is None:
                 return _json_response(start_response, 401, {"error": "invalid_token"})
-            return _json_response(start_response, 200, {"user_id": uid})
+            with session() as conn:
+                row = conn.execute(
+                    "SELECT id, username FROM users WHERE id = ?",
+                    (uid,),
+                ).fetchone()
+                if not row:
+                    return _json_response(start_response, 404, {"error": "user_not_found"})
+                return _json_response(
+                    start_response, 200, {"user_id": row["id"], "username": row["username"]}
+                )
 
         # Original prefixed API
         if path == "/api/users/signup":
@@ -218,7 +230,11 @@ def app(environ, start_response):
 
 
 def run(host: str = "127.0.0.1", port: int = 8000) -> None:
+    # Reset database on every server start (dev-only behavior).
+    db_path = get_default_db_path()
+    if db_path.exists():
+        db_path.unlink()
+    init_db(db_path)
     with make_server(host, port, app) as httpd:
         print(f"Serving HTTP API on http://{host}:{port}")
         httpd.serve_forever()
-

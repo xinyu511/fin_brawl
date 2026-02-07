@@ -7,8 +7,7 @@ export default function Home() {
           Login • Upload receipt photo → auto-extracted transaction • Chat to add expenses • Ask affordability questions.
         </p>
         <div className="row">
-          <a href="/login"><button>Login / Sign up</button></a>
-          <a href="/dashboard"><button>Go to Dashboard</button></a>
+          <a href="/login"><button>Get started</button></a>
         </div>
       </div>
 
