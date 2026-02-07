@@ -8,6 +8,7 @@ import {
   type BackendTransaction,
 } from "@/lib/backendClient";
 import type { Transaction } from "@/lib/types";
+import styles from "./page.module.css";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
@@ -218,34 +219,61 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="stack">
-      <div className="card">
-        <h3 style={{ marginTop: 0 }}>Dashboard</h3>
-        <div className="muted">
-          User: {userId ?? "Not logged in"} • Last 30d spend:{" "}
-          <b>${last30Spend.toFixed(2)}</b>
+    <div className={`row ${styles.layout} page-body`}>
+      <aside className={`card ${styles.sidebar}`}>
+        <div className={styles.sidebarTitle}>Budget Agent</div>
+        <div className={`stack ${styles.sidebarNav}`}>
+          <a className={`${styles.tab} ${styles.tabActive}`} href="/dashboard">
+            Overview
+          </a>
+          <a className={`${styles.tab}`} href="#transactions">
+            Transactions
+          </a>
+          <a className={`${styles.tab}`} href="#chat">
+            Chat
+          </a>
+          <a className={`${styles.tab}`} href="#receipts">
+            Receipts
+          </a>
+          <a className={`${styles.tab}`} href="/login">
+            Account
+          </a>
+        </div>
+        <div className={`muted ${styles.sidebarMeta}`}>
+          User: {userId ?? "Not logged in"}
+        </div>
+        {status && <div className={`muted ${styles.sidebarStatus}`}>{status}</div>}
+      </aside>
+
+      <div className={`stack ${styles.content}`}>
+        <div className="card" id="overview">
+          <h3 style={{ marginTop: 0 }}>Overview</h3>
+          <div className="muted">
+            Last 30d spend: <b>${last30Spend.toFixed(2)}</b>
+          </div>
+
+          <div className={`row ${styles.formRow}`}>
+            <div className={`stack ${styles.formField}`}>
+              <label className="muted">Monthly income</label>
+              <input
+                type="number"
+                value={monthlyIncome}
+                onChange={(e) => setMonthlyIncome(Number(e.target.value))}
+              />
+            </div>
+            <div className={`stack ${styles.formField}`}>
+              <label className="muted">Fixed costs (rent, utilities)</label>
+              <input
+                type="number"
+                value={fixedCosts}
+                onChange={(e) => setFixedCosts(Number(e.target.value))}
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="row" style={{ marginTop: 12 }}>
-          <div className="stack" style={{ minWidth: 260 }}>
-            <label className="muted">Monthly income</label>
-            <input
-              type="number"
-              value={monthlyIncome}
-              onChange={(e) => setMonthlyIncome(Number(e.target.value))}
-            />
-          </div>
-          <div className="stack" style={{ minWidth: 260 }}>
-            <label className="muted">Fixed costs (rent, utilities)</label>
-            <input
-              type="number"
-              value={fixedCosts}
-              onChange={(e) => setFixedCosts(Number(e.target.value))}
-            />
-          </div>
-        </div>
-
-        <div style={{ marginTop: 12 }}>
+        <div className="card" id="receipts">
+          <h4 style={{ marginTop: 0 }}>Receipts</h4>
           <label className="muted">Upload receipt photo (jpg/png)</label>
           <br />
           <input
@@ -258,102 +286,63 @@ export default function DashboardPage() {
           />
         </div>
 
-        {status && (
-          <div className="muted" style={{ marginTop: 10 }}>
-            {status}
+        <div className={`row ${styles.mainRow}`}>
+          <div className={`card ${styles.chatCard}`} id="chat">
+            <h4 style={{ marginTop: 0 }}>Chat</h4>
+            <div className={styles.chatLog}>
+              {chat.map((m, i) => (
+                <div key={i} className={styles.chatItem}>
+                  <div className="pill">{m.role}</div>
+                  <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
+                </div>
+              ))}
+            </div>
+            <div className={`row ${styles.chatInputRow}`}>
+              <input
+                className={styles.chatInput}
+                placeholder='e.g., "Spent $45 on Uber yesterday" or "Can I afford a $2000 trip?"'
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") sendChat();
+                }}
+              />
+              <button onClick={sendChat}>Send</button>
+            </div>
           </div>
-        )}
-      </div>
 
-      <div className="row">
-        <div className="card" style={{ flex: 2, minWidth: 360 }}>
-          <h4 style={{ marginTop: 0 }}>Chat</h4>
-          <div
-            style={{
-              height: 260,
-              overflow: "auto",
-              border: "1px solid #eee",
-              borderRadius: 12,
-              padding: 10,
-            }}
-          >
-            {chat.map((m, i) => (
-              <div key={i} style={{ marginBottom: 10 }}>
-                <div className="pill">{m.role}</div>
-                <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
-              </div>
-            ))}
-          </div>
-          <div className="row" style={{ marginTop: 10 }}>
-            <input
-              style={{ flex: 1 }}
-              placeholder='e.g., "Spent $45 on Uber yesterday" or "Can I afford a $2000 trip?"'
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") sendChat();
-              }}
-            />
-            <button onClick={sendChat}>Send</button>
-          </div>
-          <div className="muted" style={{ marginTop: 8 }}>
-            Tip: Ask “What should I cut first?” after you have some transactions.
-          </div>
-        </div>
-
-        <div className="card" style={{ flex: 3, minWidth: 420 }}>
-          <h4 style={{ marginTop: 0 }}>Transactions</h4>
-          {!userId ? (
-            <div className="muted">Login to see your transactions.</div>
-          ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Merchant</th>
-                  <th>Amount</th>
-                  <th>Category</th>
-                  <th>Source</th>
-                </tr>
-              </thead>
-              <tbody>
-                {txs.map((t) => (
-                  <tr key={t.id}>
-                    <td>{t.date}</td>
-                    <td>{t.merchant}</td>
-                    <td>${Number(t.amount).toFixed(2)}</td>
-                    <td>{t.category ?? "-"}</td>
-                    <td>
-                      <span className="pill">{t.source}</span>
-                    </td>
+          <div className={`card ${styles.transactionsCard}`} id="transactions">
+            <h4 style={{ marginTop: 0 }}>Transactions</h4>
+            {!userId ? (
+              <div className="muted">Login to see your transactions.</div>
+            ) : (
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Merchant</th>
+                    <th>Amount</th>
+                    <th>Category</th>
+                    <th>Source</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody>
+                  {txs.map((t) => (
+                    <tr key={t.id}>
+                      <td>{t.date}</td>
+                      <td>{t.merchant}</td>
+                      <td>${Number(t.amount).toFixed(2)}</td>
+                      <td>{t.category ?? "-"}</td>
+                      <td>
+                        <span className="pill">{t.source}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
-      </div>
-
-      <div className="card">
-        <h4 style={{ marginTop: 0 }}>Next steps (optional)</h4>
-        <ul className="muted" style={{ marginBottom: 0 }}>
-          <li>
-            Add a pie chart endpoint (server) + chart component (client) for
-            category breakdown.
-          </li>
-          <li>
-            Implement recurring charge detection in{" "}
-            <code>app/api/chat/route.ts</code> using merchant + monthly pattern.
-          </li>
-          <li>
-            Implement screenshot OCR or use OpenAI vision on bank statement
-            screenshots.
-          </li>
-          <li>
-            Add city cost-of-living data and answer “Which city should I live
-            in…” more concretely.
-          </li>
-        </ul>
       </div>
     </div>
   );

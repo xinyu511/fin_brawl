@@ -1,0 +1,161 @@
+.layout {
+  --dash-sidebar-width: 240px;
+  --dash-gap: 16px;
+  --dash-border: #e9e9ef;
+  --dash-soft: #f7f7fb;
+  --dash-ink: #1d1d25;
+  --dash-muted: #6c6c7a;
+  gap: var(--dash-gap);
+  align-items: flex-start;
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  justify-content: flex-start;
+}
+
+.sidebar {
+  width: var(--dash-sidebar-width);
+  position: fixed;
+  top: 0;
+  left: 0;
+  border: 1px solid var(--dash-border);
+  background: #d4cbbf;
+  height: 100vh;
+  align-self: stretch;
+  z-index: 10;
+  border-radius: 0;
+}
+
+.sidebarNav {
+  gap: 16px;
+}
+
+.tab {
+  background: transparent;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 10px 4px;
+  padding: 12px 6px;
+  border-radius: 10px;
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+  text-decoration: none;
+}
+
+.tab:hover {
+  background: #ffffff;
+  color: #3b3b4b;
+  transform: translateX(2px);
+}
+
+.tabActive {
+  background: #f5f4f1;
+  color: #1e1e28;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.sidebarMeta {
+  margin-top: 12px;
+  color: var(--dash-muted);
+}
+
+.sidebarStatus {
+  margin-top: 8px;
+  color: var(--dash-muted);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  margin-left: calc(var(--dash-sidebar-width) + 16px);
+  padding-left: 16px;
+}
+
+.sidebarTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 12px 6px 18px 6px;
+  color: var(--dash-ink);
+}
+.formRow {
+  margin-top: 12px;
+  gap: 12px;
+}
+
+.formField {
+  min-width: 260px;
+}
+
+.mainRow {
+  align-items: stretch;
+  gap: 16px;
+}
+
+.chatCard {
+  flex: 2;
+  min-width: 300px;
+}
+
+.chatLog {
+  height: 260px;
+  overflow: auto;
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+  padding: 10px;
+  background: #fff;
+}
+
+.chatItem {
+  margin-bottom: 10px;
+}
+
+.chatInputRow {
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.chatInput {
+  flex: 1;
+}
+
+.chatTip {
+  margin-top: 8px;
+}
+
+.transactionsCard {
+  flex: 3;
+  min-width: 360px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--dash-border);
+}
+
+@media (max-width: 980px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    position: static;
+  }
+
+  .mainRow {
+    flex-direction: column;
+  }
+
+  .chatCard,
+  .transactionsCard {
+    min-width: 0;
+  }
+}
