@@ -88,6 +88,7 @@ export default function DashboardPage() {
 
   const [monthlyIncome, setMonthlyIncome] = useState<number>(4000);
   const [fixedCosts, setFixedCosts] = useState<number>(1500);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     if (STATIC_MODE) {
@@ -142,6 +143,48 @@ export default function DashboardPage() {
       .reduce((acc, t) => acc + Number(t.amount), 0);
   }, [txs]);
 
+  const last7Days = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (6 - i));
+      return d;
+    });
+  }, []);
+
+  const categoryTrend = useMemo(() => {
+    if (!selectedCategory) return [];
+    const map = new Map<string, number>();
+    for (const t of txs) {
+      if ((t.category || "Other") !== selectedCategory) continue;
+      const d = new Date(t.date);
+      if (Number.isNaN(d.getTime())) continue;
+      d.setHours(0, 0, 0, 0);
+      const key = d.toISOString().slice(0, 10);
+      map.set(key, (map.get(key) || 0) + Number(t.amount || 0));
+    }
+    return last7Days.map((d) => {
+      const key = d.toISOString().slice(0, 10);
+      return { date: key, amount: map.get(key) || 0 };
+    });
+  }, [last7Days, selectedCategory, txs]);
+
+  const trendMax = useMemo(() => {
+    return Math.max(1, ...categoryTrend.map((d) => d.amount));
+  }, [categoryTrend]);
+
+  const trendPoints = useMemo(() => {
+    if (!categoryTrend.length) return "";
+    return categoryTrend
+      .map((d, i) => {
+        const x = (i / Math.max(1, categoryTrend.length - 1)) * 100;
+        const y = 100 - (d.amount / trendMax) * 100;
+        return `${x},${y}`;
+      })
+      .join(" ");
+  }, [categoryTrend, trendMax]);
+
   const topCategories = useMemo(() => {
     if (!txs.length) return [...DEFAULT_CATEGORIES];
     const totals = new Map<string, number>();
@@ -177,10 +220,22 @@ export default function DashboardPage() {
                 <div className={styles.statValue}>${last30Spend.toFixed(2)}</div>
               </div>
             </div>
-            <div className={styles.overviewArt} aria-hidden="true">
+            <div className={styles.overviewArt}>
               <div className={styles.overviewArtInner}>
-                  {topCategories.map((label, i) => (
-                  <div key={label} className={`${styles.artBox} ${artClasses[i]}`}>
+                {topCategories.map((label, i) => (
+                  <div
+                    key={label}
+                    className={`${styles.artBox} ${artClasses[i]}`}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedCategory(label)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedCategory(label);
+                      }
+                    }}
+                  >
                     <span className={`brand-font ${styles.artLabel}`}>{label}</span>
                   </div>
                 ))}
@@ -189,6 +244,38 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {selectedCategory && (
+        <div className={styles.modalBackdrop} onClick={() => setSelectedCategory(null)}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div className={`brand-font ${styles.modalTitle}`}>
+                {selectedCategory} • Last 7 Days
+              </div>
+              <button
+                className={styles.modalClose}
+                onClick={() => setSelectedCategory(null)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.trendChart}>
+              <svg viewBox="0 0 100 100" className={styles.trendSvg} preserveAspectRatio="none">
+                <polyline className={styles.trendLine} points={trendPoints} />
+              </svg>
+              <div className={styles.trendAxis}>
+                {categoryTrend.map((d) => (
+                  <div key={d.date} className={styles.trendTick}>
+                    <div className={styles.trendDate}>{d.date.slice(5)}</div>
+                    <div className={styles.trendAmount}>${d.amount.toFixed(2)}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

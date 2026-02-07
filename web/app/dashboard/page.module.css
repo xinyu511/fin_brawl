@@ -190,6 +190,13 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.artBox:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(30, 40, 50, 0.12);
 }
 
 .artA {
@@ -244,6 +251,89 @@
   padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 24, 30, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 24px;
+}
+
+.modalCard {
+  width: min(560px, 92vw);
+  background: #fffef9;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+  padding: 18px 18px 16px 18px;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.modalTitle {
+  font-size: 24px;
+}
+
+.modalClose {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.trendChart {
+  display: grid;
+  gap: 12px;
+}
+
+.trendSvg {
+  width: 100%;
+  height: 180px;
+  background: #f2f5fb;
+  border-radius: 12px;
+}
+
+.trendLine {
+  fill: none;
+  stroke: #1f6f3f;
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.trendAxis {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  font-size: 11px;
+}
+
+.trendTick {
+  display: grid;
+  gap: 4px;
+  text-align: center;
+}
+
+.trendDate {
+  color: #48505b;
+}
+
+.trendAmount {
+  font-variant-numeric: tabular-nums;
+  color: #1f2228;
 }
 
 .mainRow {
