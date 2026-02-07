@@ -43,6 +43,12 @@ export default function DashboardPage() {
   const [fixedCosts, setFixedCosts] = useState<number>(1500);
 
   useEffect(() => {
+    if (STATIC_MODE) {
+      setUserId(STATIC_USER_ID);
+      setTxs(STATIC_TXS);
+      setStatus("Static mode enabled — using mock data.");
+      return;
+    }
     (async () => {
       const token = getToken();
       if (!token) {
