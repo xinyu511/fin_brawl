@@ -347,7 +347,7 @@
 }
 
 .chatCardShell {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.86);
   border-radius: 20px;
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.12);
   padding: 18px;
@@ -365,7 +365,7 @@
 }
 
 .chatLog {
-  width: 97%;
+  width: 98%;
   flex: 1;
   min-height: 520px;
   max-height: 520px;
@@ -374,7 +374,7 @@
   border: none;
   border-radius: 12px;
   padding: 10px;
-  background: #fff;
+  background: transparent;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -408,6 +408,19 @@
   background: #bfe6d6;
 }
 
+.typingCursor {
+  display: inline-block;
+  margin-left: 2px;
+  opacity: 0.7;
+  animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 .chatInputRow {
   margin-top: 10px;
   gap: 10px;
@@ -419,16 +432,29 @@
 }
 
 .chatInputBar {
-  width: 100%;
+  width: 98%;
   display: flex;
   gap: 10px;
   align-items: center;
 }
 
+.chatInputWrap {
+  position: relative;
+  width: 97%;
+  display: block;
+}
+
 .chatSend {
-  margin-left: auto;
-  padding: 10px 18px;
-  border-radius: 16px;
+  position: absolute;
+  right: 4px;
+  bottom: 20px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #1d1d25;
+  color: #ffffff;
+  border: none;
+  font-size: 18px;
 }
 
 .chatTip {
