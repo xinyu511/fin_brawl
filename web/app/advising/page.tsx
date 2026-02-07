@@ -45,7 +45,7 @@ export default function AdvisingPage() {
     (async () => {
       const token = getToken();
       if (!token) {
-        setStatus("Not logged in. Go to /login to sign in.");
+        setStatus("Guest mode: general answers only. Log in for personalized insights.");
         return;
       }
       try {
@@ -101,6 +101,9 @@ export default function AdvisingPage() {
     setChat((prev) => [...prev, { role: "assistant", content: out.reply }]);
   }
 
+  const hasUserInput = chat.some((msg) => msg.role === "user");
+  const showLog = hasUserInput || chat.length > 1;
+
   return (
     <div className={`row ${styles.layout} page-body page--advising`}>
       <Sidebar active="advising" username={username} status={status} />
@@ -108,25 +111,72 @@ export default function AdvisingPage() {
       <div className={`stack ${styles.content}`}>
         <div className={styles.chatRightPane}>
           <div className={styles.chatRightInner}>
-            <div className={`brand-font ${styles.chatTagline}`}>
-              Hi! Ask me about your spending, or whether you can afford something.
-            </div>
-            <div className={styles.chatInputCenter}>
-              <textarea
-                className={styles.chatInputLarge}
-                placeholder='e.g., "Spent $45 on Uber yesterday" or "Can I afford a $2000 trip?"'
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    sendChat();
-                  }
-                }}
-                rows={5}
-              />
-              <button onClick={sendChat}>Send</button>
-            </div>
+            {!showLog && (
+              <>
+                <div className={`brand-font ${styles.chatTagline}`}>
+                  Hi! Ask me about your spending, or whether you can afford something.
+                </div>
+                <div className={styles.chatInputBar}>
+                  <textarea
+                    className={styles.chatInputLarge}
+                    placeholder='e.g., "Spent $45 on Uber yesterday" or "Can I afford a $2000 trip?"'
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        sendChat();
+                      }
+                    }}
+                    rows={3}
+                  />
+                  <button className={styles.chatSend} onClick={sendChat}>
+                    Send
+                  </button>
+                </div>
+              </>
+            )}
+            {showLog && (
+              <div className={styles.chatCardShell}>
+                <div className={styles.chatLog}>
+                  {chat.map((msg, idx) => (
+                    <div
+                      key={`${msg.role}-${idx}`}
+                      className={`${styles.chatItem} ${
+                        msg.role === "assistant"
+                          ? styles.chatItemAssistant
+                          : styles.chatItemUser
+                      }`}
+                    >
+                      <span className={styles.chatBubble}>{msg.content}</span>
+                    </div>
+                  ))}
+                  {status === "Thinking..." && (
+                    <div className={`${styles.chatItem} ${styles.chatItemAssistant}`}>
+                      <span className={styles.chatBubble}>Thinking...</span>
+                    </div>
+                  )}
+                </div>
+                <div className={styles.chatInputBar}>
+                  <textarea
+                    className={styles.chatInputLarge}
+                    placeholder='e.g., "Spent $45 on Uber yesterday" or "Can I afford a $2000 trip?"'
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        sendChat();
+                      }
+                    }}
+                    rows={3}
+                  />
+                  <button className={styles.chatSend} onClick={sendChat}>
+                    Send
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

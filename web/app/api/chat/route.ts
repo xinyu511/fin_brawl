@@ -94,11 +94,32 @@ export async function POST(req: Request) {
       ? (process.env.DEDALUS_MODEL_TEXT || "openai/gpt-4o-mini")
       : (process.env.OPENAI_MODEL_TEXT || "gpt-4.1-mini");
 
-    if (!user_id || !token) {
-      return NextResponse.json({
-        reply:
-          "Please login first so I can read your transactions and do real math. Go to /login.",
+    const guestMode = !user_id || !token;
+    if (guestMode) {
+      const explain = await llmComplete({
+        model: modelText,
+        input: [
+          { role: "system", content: [{ type: "input_text", text: ANSWER_SYSTEM }] },
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: `${message}
+
+Note: You do not have access to the user's transactions. Give general guidance and suggest logging in for personalized insights.`,
+              },
+            ],
+          },
+        ],
       });
+
+      const reply: string =
+        explain?.output?.[0]?.content?.find(
+          (c: { type: string }) => c.type === "output_text"
+        )?.text ?? "Please log in for personalized insights.";
+
+      return NextResponse.json({ reply });
     }
 
     // Intent routing

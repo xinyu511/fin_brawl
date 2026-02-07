@@ -163,7 +163,7 @@
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = function(chunkId) {
 /******/ 			// return url for filenames based on template
-/******/ 			return "static/chunks/" + chunkId + ".js";
+/******/ 			return undefined;
 /******/ 		};
 /******/ 	}();
 /******/ 	
@@ -192,7 +192,7 @@
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	!function() {
-/******/ 		__webpack_require__.h = function() { return "c5f26d90a04cac4e"; }
+/******/ 		__webpack_require__.h = function() { return "4025583ee321a93e"; }
 /******/ 	}();
 /******/ 	
 /******/ 	/* webpack/runtime/global */
@@ -830,7 +830,7 @@
 /******/ 		// [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
 /******/ 		var installedChunks = __webpack_require__.hmrS_jsonp = __webpack_require__.hmrS_jsonp || {
 /******/ 			"webpack": 0,
-/******/ 			"css-app_account_page_module_css-app_dashboard_page_module_css-app_transactions_page_module_css": 0,
+/******/ 			"css-app_dashboard_page_module_css": 0,
 /******/ 			"css-app_globals_css-node_modules_next_font_google_target_css": 0
 /******/ 		};
 /******/ 		
@@ -843,7 +843,7 @@
 /******/ 					if(installedChunkData) {
 /******/ 						promises.push(installedChunkData[2]);
 /******/ 					} else {
-/******/ 						if(/^(app(\/((account|advising|dashboard|transactions)\/page|layout)|\-pages\-internals)|_app\-pages\-browser_lib_supabaseClient_ts|main\-app)$/.test(chunkId)) {
+/******/ 						if(/^(app(\-pages\-internals|\/advising\/page|\/layout)|main\-app)$/.test(chunkId)) {
 /******/ 							// setup Promise in chunk cache
 /******/ 							var promise = new Promise(function(resolve, reject) { installedChunkData = installedChunks[chunkId] = [resolve, reject]; });
 /******/ 							promises.push(installedChunkData[2] = promise);
