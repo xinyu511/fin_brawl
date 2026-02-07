@@ -120,6 +120,9 @@
 .statSplit {
   border-radius: 999px;
   padding: 12px 18px;
+  height: 72px;
+  align-items: center;
+  align-content: center;
 }
 
 .statLabel {
