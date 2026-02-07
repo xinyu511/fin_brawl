@@ -1,10 +1,10 @@
 {
   "pages": {
-    "/dashboard/page": [
+    "/transactions/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/css-app_account_page_module_css-app_dashboard_page_module_css-app_transactions_page_module_css.css",
-      "static/chunks/app/dashboard/page.js"
+      "static/chunks/app/transactions/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -12,11 +12,11 @@
       "static/css/css-app_globals_css-node_modules_next_font_google_target_css.css",
       "static/chunks/app/layout.js"
     ],
-    "/transactions/page": [
+    "/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/css-app_account_page_module_css-app_dashboard_page_module_css-app_transactions_page_module_css.css",
-      "static/chunks/app/transactions/page.js"
+      "static/chunks/app/dashboard/page.js"
     ],
     "/advising/page": [
       "static/chunks/webpack.js",

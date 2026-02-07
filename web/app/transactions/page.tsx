@@ -191,8 +191,36 @@ export default function TransactionsPage() {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 30);
     return txs
-      .filter((t) => new Date(t.date) >= cutoff)
+      .filter((t) => new Date(`${t.date}T00:00:00`) >= cutoff)
       .reduce((acc, t) => acc + Number(t.amount), 0);
+  }, [txs]);
+
+  const last30Change = useMemo(() => {
+    const end = new Date();
+    const start30 = new Date(end);
+    start30.setDate(start30.getDate() - 30);
+    const start60 = new Date(end);
+    start60.setDate(start60.getDate() - 60);
+
+    let prevSum = 0;
+    let prevCount = 0;
+    let currSum = 0;
+
+    for (const t of txs) {
+      const d = new Date(`${t.date}T00:00:00`);
+      if (d >= start30 && d < end) {
+        currSum += Number(t.amount);
+      } else if (d >= start60 && d < start30) {
+        prevSum += Number(t.amount);
+        prevCount += 1;
+      }
+    }
+
+    if (prevCount === 0 || prevSum === 0) {
+      return null;
+    }
+
+    return ((currSum - prevSum) / prevSum) * 100;
   }, [txs]);
 
   const filteredTxs = useMemo(() => {
@@ -387,8 +415,10 @@ export default function TransactionsPage() {
                   <div className={styles.sparkline} />
                 </div>
                 <div className={styles.miniCard}>
-                  <div className={styles.miniTitle}>Fixed costs (month)</div>
-                  <div className={styles.miniValue}>${fixedCosts.toFixed(2)}</div>
+                  <div className={styles.miniTitle}>30d spend change</div>
+                  <div className={styles.miniValue}>
+                    {last30Change == null ? "N/A" : `${last30Change > 0 ? "+" : ""}${last30Change.toFixed(1)}%`}
+                  </div>
                   <div className={styles.sparklineAlt} />
                 </div>
               </div>
