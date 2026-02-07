@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { login, register, setToken } from "@/lib/backendClient";
+import styles from "./page.module.css";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -34,8 +35,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="stack">
-      <div className="card">
+    <div className={styles.loginPage}>
+      <div className={`card ${styles.loginCard}`}>
         <h3 style={{ marginTop: 0 }}>Login / Sign up</h3>
         <div className="stack">
           <input

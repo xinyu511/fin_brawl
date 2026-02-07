@@ -141,11 +141,31 @@ export default function DashboardPage() {
 
       <div className={`stack ${styles.content}`}>
         <div className="card" id="overview">
-          <h3 style={{ marginTop: 0 }}>Overview</h3>
-          <div className={`row ${styles.statRow}`}>
-            <div className={styles.statCard}>
-              <div className={styles.statLabel}>Last 30d spend</div>
-              <div className={styles.statValue}>${last30Spend.toFixed(2)}</div>
+          <div className={styles.overviewStage}>
+            <div className={`row ${styles.statRow}`}>
+              <div className={styles.statCard}>
+                <div className={styles.statLabel}>Last 30d spend</div>
+                <div className={styles.statValue}>${last30Spend.toFixed(2)}</div>
+              </div>
+            </div>
+            <div className={styles.overviewArt} aria-hidden="true">
+              <div className={styles.overviewArtInner}>
+                <div className={`${styles.artBox} ${styles.artA}`}>
+                  <span className={`brand-font ${styles.artLabel}`}>Groceries</span>
+                </div>
+                <div className={`${styles.artBox} ${styles.artB}`}>
+                  <span className={`brand-font ${styles.artLabel}`}>Housing</span>
+                </div>
+                <div className={`${styles.artBox} ${styles.artC}`}>
+                  <span className={`brand-font ${styles.artLabel}`}>Travel</span>
+                </div>
+                <div className={`${styles.artBox} ${styles.artD}`}>
+                  <span className={`brand-font ${styles.artLabel}`}>Shopping</span>
+                </div>
+                <div className={`${styles.artBox} ${styles.artE}`}>
+                  <span className={`brand-font ${styles.artLabel}`}>Dining</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

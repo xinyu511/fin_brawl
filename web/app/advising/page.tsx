@@ -106,30 +106,27 @@ export default function AdvisingPage() {
       <Sidebar active="advising" username={username} status={status} />
 
       <div className={`stack ${styles.content}`}>
-        <div className={`card ${styles.chatCard}`}>
-          <h3 style={{ marginTop: 0 }}>Advising</h3>
-          <p className="muted">
-            Uses your income and fixed costs from the Transactions page.
-          </p>
-          <div className={styles.chatLog}>
-            {chat.map((m, i) => (
-              <div key={i} className={styles.chatItem}>
-                <div className="pill">{m.role}</div>
-                <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
-              </div>
-            ))}
-          </div>
-          <div className={`row ${styles.chatInputRow}`}>
-            <input
-              className={styles.chatInput}
-              placeholder='e.g., "Spent $45 on Uber yesterday" or "Can I afford a $2000 trip?"'
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") sendChat();
-              }}
-            />
-            <button onClick={sendChat}>Send</button>
+        <div className={styles.chatRightPane}>
+          <div className={styles.chatRightInner}>
+            <div className={`brand-font ${styles.chatTagline}`}>
+              Hi! Ask me about your spending, or whether you can afford something.
+            </div>
+            <div className={styles.chatInputCenter}>
+              <textarea
+                className={styles.chatInputLarge}
+                placeholder='e.g., "Spent $45 on Uber yesterday" or "Can I afford a $2000 trip?"'
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChat();
+                  }
+                }}
+                rows={5}
+              />
+              <button onClick={sendChat}>Send</button>
+            </div>
           </div>
         </div>
       </div>
