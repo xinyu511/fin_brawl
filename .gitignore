@@ -23,5 +23,3 @@
 hs_err_pid*
 replay_pid*
 web/node_modules/*
-web/.next/*
-data/fin.db
