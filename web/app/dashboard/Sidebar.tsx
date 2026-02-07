@@ -27,7 +27,7 @@ export default function Sidebar({ active, username, status, title }: SidebarProp
 
   return (
     <aside className={`card ${styles.sidebar}`}>
-      <div className={styles.sidebarTitle}>{title || "Budget Agent"}</div>
+      <div className={`brand-font ${styles.sidebarTitle}`}>{title || "PiggyAI"}</div>
       <div className={`stack ${styles.sidebarNav}`}>
         <Link className={tabClass(active, "overview")} href="/dashboard">
           Overview
@@ -42,11 +42,13 @@ export default function Sidebar({ active, username, status, title }: SidebarProp
           Account
         </Link>
       </div>
-      <div className={`muted ${styles.sidebarMeta}`}>
-        User: {username ?? "Not logged in"}
+      <div className={styles.sidebarBottom}>
+        <div className={`muted ${styles.sidebarMeta}`}>
+          User: {username ?? "Not logged in"}
+        </div>
+        <button onClick={signOut}>Logout</button>
+        {showStatus && <div className={`muted ${styles.sidebarStatus}`}>{status}</div>}
       </div>
-      <button onClick={signOut}>Logout</button>
-      {showStatus && <div className={`muted ${styles.sidebarStatus}`}>{status}</div>}
     </aside>
   );
 }

@@ -10,6 +10,16 @@ exports.id = "vendor-chunks/next";
 exports.ids = ["vendor-chunks/next"];
 exports.modules = {
 
+/***/ "(rsc)/./node_modules/next/font/google/target.css?{\"path\":\"app/layout.tsx\",\"import\":\"Baloo_2\",\"arguments\":[{\"subsets\":[\"latin\"],\"weight\":[\"600\",\"700\"],\"variable\":\"--font-bubble\"}],\"variableName\":\"baloo\"}":
+/*!************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/next/font/google/target.css?{"path":"app/layout.tsx","import":"Baloo_2","arguments":[{"subsets":["latin"],"weight":["600","700"],"variable":"--font-bubble"}],"variableName":"baloo"} ***!
+  \************************************************************************************************************************************************************************************************************/
+/***/ ((module) => {
+
+eval("// Exports\nmodule.exports = {\n\t\"style\": {\"fontFamily\":\"'__Baloo_2_079b24', '__Baloo_2_Fallback_079b24'\",\"fontStyle\":\"normal\"},\n\t\"className\": \"__className_079b24\",\n\t\"variable\": \"__variable_079b24\"\n};\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvbmV4dC9mb250L2dvb2dsZS90YXJnZXQuY3NzP3tcInBhdGhcIjpcImFwcC9sYXlvdXQudHN4XCIsXCJpbXBvcnRcIjpcIkJhbG9vXzJcIixcImFyZ3VtZW50c1wiOlt7XCJzdWJzZXRzXCI6W1wibGF0aW5cIl0sXCJ3ZWlnaHRcIjpbXCI2MDBcIixcIjcwMFwiXSxcInZhcmlhYmxlXCI6XCItLWZvbnQtYnViYmxlXCJ9XSxcInZhcmlhYmxlTmFtZVwiOlwiYmFsb29cIn0iLCJtYXBwaW5ncyI6IkFBQUE7QUFDQTtBQUNBLFdBQVcsb0ZBQW9GO0FBQy9GO0FBQ0E7QUFDQSIsInNvdXJjZXMiOlsid2VicGFjazovL2J1ZGdldC1hZ2VudC8uL25vZGVfbW9kdWxlcy9uZXh0L2ZvbnQvZ29vZ2xlL3RhcmdldC5jc3M/MGY1NCJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyBFeHBvcnRzXG5tb2R1bGUuZXhwb3J0cyA9IHtcblx0XCJzdHlsZVwiOiB7XCJmb250RmFtaWx5XCI6XCInX19CYWxvb18yXzA3OWIyNCcsICdfX0JhbG9vXzJfRmFsbGJhY2tfMDc5YjI0J1wiLFwiZm9udFN0eWxlXCI6XCJub3JtYWxcIn0sXG5cdFwiY2xhc3NOYW1lXCI6IFwiX19jbGFzc05hbWVfMDc5YjI0XCIsXG5cdFwidmFyaWFibGVcIjogXCJfX3ZhcmlhYmxlXzA3OWIyNFwiXG59O1xuIl0sIm5hbWVzIjpbXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/next/font/google/target.css?{\"path\":\"app/layout.tsx\",\"import\":\"Baloo_2\",\"arguments\":[{\"subsets\":[\"latin\"],\"weight\":[\"600\",\"700\"],\"variable\":\"--font-bubble\"}],\"variableName\":\"baloo\"}\n");
+
+/***/ }),
+
 /***/ "(ssr)/./node_modules/next/dist/api/link.js":
 /*!********************************************!*\
   !*** ./node_modules/next/dist/api/link.js ***!

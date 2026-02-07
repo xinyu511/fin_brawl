@@ -11,7 +11,7 @@ import {
 } from "@/lib/backendClient";
 import type { Transaction } from "@/lib/types";
 import Sidebar from "../dashboard/Sidebar";
-import styles from "../dashboard/page.module.css";
+import styles from "./page.module.css";
 
 const STATIC_MODE = process.env.NEXT_PUBLIC_STATIC_MODE === "true";
 const STATIC_USER_ID = "static-user";
@@ -350,30 +350,32 @@ export default function TransactionsPage() {
           {!userId ? (
             <div className="muted">Login to see your transactions.</div>
           ) : (
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Merchant</th>
-                  <th>Amount</th>
-                  <th>Category</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {txs.map((t) => (
-                  <tr key={t.id}>
-                    <td>{t.date}</td>
-                    <td>{t.merchant}</td>
-                    <td>${Number(t.amount).toFixed(2)}</td>
-                    <td>{t.category ?? "-"}</td>
-                    <td>
-                      <button onClick={() => removeTransaction(t.id)}>Delete</button>
-                    </td>
+            <div className={styles.tableScroll}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Merchant</th>
+                    <th>Amount</th>
+                    <th>Category</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {txs.map((t) => (
+                    <tr key={t.id}>
+                      <td>{t.date}</td>
+                      <td>{t.merchant}</td>
+                      <td>${Number(t.amount).toFixed(2)}</td>
+                      <td>{t.category ?? "-"}</td>
+                      <td>
+                        <button onClick={() => removeTransaction(t.id)}>Delete</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
