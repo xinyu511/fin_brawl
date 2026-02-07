@@ -464,6 +464,27 @@
   gap: 12px;
 }
 
+.chatSessionRow {
+  width: 98%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.chatSessionButton {
+  border: 1px solid rgba(31, 34, 40, 0.2);
+  background: #ffffff;
+  color: #1f2228;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chatSessionButton:hover {
+  background: #f5f7fb;
+}
+
 .chatMetaCard {
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.92);
@@ -658,5 +679,9 @@
   .chatCard,
   .transactionsCard {
     min-width: 0;
+  }
+
+  .chatSessionRow {
+    justify-content: flex-start;
   }
 }
