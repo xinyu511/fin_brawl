@@ -194,6 +194,9 @@ export default function AccountPage() {
       });
       setIncomeForm(emptyIncomeForm);
       await refreshIncomes();
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("fin_brawl_account_refresh", String(Date.now()));
+      }
       setIncomeStatus({ kind: "saved", text: "Income added." });
     } catch (e) {
       setIncomeStatus({
@@ -209,6 +212,9 @@ export default function AccountPage() {
     try {
       await deleteIncome(id);
       await refreshIncomes();
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("fin_brawl_account_refresh", String(Date.now()));
+      }
       setIncomeStatus({ kind: "saved", text: "Income deleted." });
     } catch (e) {
       setIncomeStatus({

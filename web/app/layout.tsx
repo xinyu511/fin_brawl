@@ -10,7 +10,7 @@ const baloo = Baloo_2({
 import BodyShell from "./BodyShell";
 
 export const metadata: Metadata = {
-  title: "PiggyAI",
+  title: "PiggyBot",
   description: "Budget-tracking LLM website scaffold",
 };
 

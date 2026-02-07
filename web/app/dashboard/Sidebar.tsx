@@ -32,7 +32,7 @@ export default function Sidebar({ active, username, status, title }: SidebarProp
 
   return (
     <aside className={`card ${styles.sidebar}`}>
-      <div className={`brand-font ${styles.sidebarTitle}`}>{title || "PiggyAI"}</div>
+      <div className={`brand-font ${styles.sidebarTitle}`}>{title || "PiggyBot"}</div>
       <div className={`stack ${styles.sidebarNav}`}>
         <Link className={tabClass(active, "overview")} href="/dashboard">
           Overview

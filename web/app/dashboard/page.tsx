@@ -164,6 +164,24 @@ export default function DashboardPage() {
     refreshAccountSnapshot();
   }, [userId]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    function handleStorage(e: StorageEvent) {
+      if (e.key === "fin_brawl_account_refresh") {
+        refreshAccountSnapshot();
+      }
+    }
+    function handleFocus() {
+      refreshAccountSnapshot();
+    }
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [userId]);
+
   const last30Spend = useMemo(() => {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 30);
@@ -180,14 +198,21 @@ export default function DashboardPage() {
     return netWorth + incomeTotal - totalSpend;
   }, [incomeTotal, netWorth, totalSpend]);
 
-  const last7Days = useMemo(() => {
+  const last3Months = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - (6 - i));
-      return d;
-    });
+    const start = new Date(today);
+    start.setMonth(start.getMonth() - 2, 1);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(today);
+    end.setDate(end.getDate() + 1);
+    const days: Date[] = [];
+    const cursor = new Date(start);
+    while (cursor < end) {
+      days.push(new Date(cursor));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return days;
   }, []);
 
   const categoryTrend = useMemo(() => {
@@ -201,11 +226,11 @@ export default function DashboardPage() {
       const key = d.toISOString().slice(0, 10);
       map.set(key, (map.get(key) || 0) + Number(t.amount || 0));
     }
-    return last7Days.map((d) => {
+    return last3Months.map((d) => {
       const key = d.toISOString().slice(0, 10);
       return { date: key, amount: map.get(key) || 0 };
     });
-  }, [last7Days, selectedCategory, txs]);
+  }, [last3Months, selectedCategory, txs]);
 
   const trendMax = useMemo(() => {
     return Math.max(1, ...categoryTrend.map((d) => d.amount));
@@ -294,7 +319,7 @@ export default function DashboardPage() {
           <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <div className={`brand-font ${styles.modalTitle}`}>
-                {selectedCategory} • Last 7 Days
+                {selectedCategory} • Last 3 Months
               </div>
               <button
                 className={styles.modalClose}
@@ -309,9 +334,11 @@ export default function DashboardPage() {
                 <polyline className={styles.trendLine} points={trendPoints} />
               </svg>
               <div className={styles.trendAxis}>
-                {categoryTrend.map((d) => (
+                {categoryTrend.map((d, idx) => (
                   <div key={d.date} className={styles.trendTick}>
-                    <div className={styles.trendDate}>{d.date.slice(5)}</div>
+                    <div className={styles.trendDate}>
+                      {idx % 14 === 0 ? d.date.slice(5) : ""}
+                    </div>
                     <div className={styles.trendAmount}>${d.amount.toFixed(2)}</div>
                   </div>
                 ))}

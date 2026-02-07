@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import csv
 import json
 from typing import Any, Dict, Optional, Tuple
 from wsgiref.simple_server import make_server, WSGIServer
 from wsgiref.util import request_uri
 
-from .db import get_default_db_path, init_db, session
+from .db import get_default_db_path, get_project_root, init_db, session
 from .users import register_user, login_user, verify_auth_token
 from .onboarding import update_financial_profile
 
@@ -104,6 +105,48 @@ def _get_profile(conn, user_id: int) -> Optional[Dict[str, Any]]:
     return dict(row)
 
 
+def _seed_defaults(conn, user_id: int) -> None:
+    # Seed expenses from CSV if none exist.
+    count = conn.execute(
+        "SELECT COUNT(1) AS n FROM expenses WHERE user_id = ?",
+        (user_id,),
+    ).fetchone()
+    if count and count["n"] == 0:
+        csv_path = get_project_root() / "data" / "transaction_data.csv"
+        if csv_path.exists():
+            with csv_path.open("r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    date = (row.get("date") or "").strip()
+                    merchant = (row.get("merchant") or "Seeded").strip()
+                    amount_raw = (row.get("amount") or "").strip()
+                    category = (row.get("category") or "Other").strip() or "Other"
+                    if not date or not amount_raw:
+                        continue
+                    try:
+                        amount_cents = int(round(float(amount_raw) * 100))
+                    except ValueError:
+                        continue
+                    conn.execute(
+                        """
+                        INSERT INTO expenses
+                          (user_id, amount_cents, category, occurred_at, note, merchant, source)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (user_id, amount_cents, category, date, merchant, merchant, "seed"),
+                    )
+            conn.commit()
+
+    # Seed net worth if missing.
+    profile = _get_profile(conn, user_id)
+    if profile and profile.get("net_worth_cents") is None:
+        conn.execute(
+            "UPDATE financial_profiles SET net_worth_cents = ? WHERE user_id = ?",
+            (25000 * 100, user_id),
+        )
+        conn.commit()
+
+
 def app(environ, start_response):
     try:
         method = environ["REQUEST_METHOD"].upper()
@@ -132,6 +175,7 @@ def app(environ, start_response):
                 token = login_user(conn, username, password)
                 if token is None:
                     return _json_response(start_response, 500, {"error": "signup_login_failed"})
+                _seed_defaults(conn, user_id)
                 return _json_response(start_response, 201, {"user_id": user_id, "token": token})
 
         if path == "/auth/login":
@@ -148,8 +192,11 @@ def app(environ, start_response):
                 token = login_user(conn, username, password)
                 if token is None:
                     return _json_response(start_response, 401, {"error": "invalid_credentials"})
+                uid = verify_auth_token(token)  # safe immediately after creation
+                if uid is not None:
+                    _seed_defaults(conn, uid)
             # Return both token and user_id for convenience
-            uid = verify_auth_token(token)  # safe immediately after creation
+            uid = verify_auth_token(token)
             return _json_response(start_response, 200, {"token": token, "user_id": uid})
 
         if path == "/auth/me":
@@ -168,6 +215,7 @@ def app(environ, start_response):
                 ).fetchone()
                 if not row:
                     return _json_response(start_response, 404, {"error": "user_not_found"})
+                _seed_defaults(conn, uid)
                 return _json_response(
                     start_response, 200, {"user_id": row["id"], "username": row["username"]}
                 )
@@ -214,6 +262,7 @@ def app(environ, start_response):
                 return _json_response(start_response, 401, {"error": "invalid_token"})
             if method == "GET":
                 with session() as conn:
+                    _seed_defaults(conn, user_id)
                     profile = _get_profile(conn, user_id)
                     if profile is None:
                         return _json_response(start_response, 404, {"error": "profile_not_found"})
@@ -250,6 +299,7 @@ def app(environ, start_response):
             if method == "GET":
                 limit = _parse_limit(environ)
                 with session() as conn:
+                    _seed_defaults(conn, user_id)
                     rows = conn.execute(
                         """
                         SELECT id, user_id, amount_cents, category, occurred_at, note,
@@ -352,6 +402,7 @@ def app(environ, start_response):
             if method == "GET":
                 limit = _parse_limit(environ)
                 with session() as conn:
+                    _seed_defaults(conn, user_id)
                     rows = conn.execute(
                         """
                         SELECT id, user_id, amount_cents, source, start_date, end_date, created_at

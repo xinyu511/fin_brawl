@@ -95,9 +95,9 @@ export default function TransactionsPage() {
   const [showManual, setShowManual] = useState<boolean>(false);
   const [showReceipt, setShowReceipt] = useState<boolean>(false);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const [selectedDay, setSelectedDay] = useState<number>(7);
+  const [selectedDay, setSelectedDay] = useState<number>(1);
   const [monthOffset, setMonthOffset] = useState<number>(0);
-  const [interval, setInterval] = useState<"day" | "month" | "quarter" | "year">("month");
+  const [interval, setInterval] = useState<"day" | "month" | "quarter" | "year">("year");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [page, setPage] = useState<number>(1);
   const baseMonth = useMemo(() => {
@@ -124,7 +124,7 @@ export default function TransactionsPage() {
     return [...blanks, ...days];
   }, [firstDow, daysInMonth]);
   const intervalRange = useMemo(() => {
-    const start = new Date(
+    let start = new Date(
       baseMonth.getFullYear(),
       baseMonth.getMonth(),
       selectedDay
@@ -139,7 +139,9 @@ export default function TransactionsPage() {
       const q = Math.floor(start.getMonth() / 3);
       end = new Date(start.getFullYear(), q * 3 + 3, 1);
     } else {
-      end = new Date(start.getFullYear() + 1, 0, 1);
+      start = new Date(baseMonth.getFullYear(), 0, 1);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(baseMonth.getFullYear() + 1, 0, 1);
     }
     return { start, end };
   }, [baseMonth, selectedDay, interval]);

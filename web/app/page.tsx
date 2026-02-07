@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div className={`stack ${styles.hero}`}>
       <div className={`card ${styles.heroCard}`}>
-        <h3 style={{ marginTop: 0 }}>One-day Budget-Tracking LLM Website</h3>
+        <h3 style={{ marginTop: 0 }}>Budget-Tracking LLM Website</h3>
         <div className={`row ${styles.centerRow}`}>
           <button className={styles.getStartedButton} type="button" onClick={() => router.push("/login")}>
             Get started

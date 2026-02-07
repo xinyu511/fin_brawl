@@ -27,7 +27,7 @@ export default function BodyShell({ children }: { children: ReactNode }) {
         }}
       >
         <Link href="/" style={{ textDecoration: "none" }}>
-          <h2 className="brand-font" style={{ margin: 0, fontSize: 32 }}>PiggyAI</h2>
+          <h2 className="brand-font" style={{ margin: 0, fontSize: 32 }}>PiggyBot</h2>
         </Link>
         <div className="muted" style={{ fontSize: 13 }}>
           Next.js • Supabase • OpenAI
