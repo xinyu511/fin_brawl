@@ -59,7 +59,7 @@ type ManualEntry = {
 };
 
 const emptyManual: ManualEntry = {
-  date: "",
+  date: new Date().toISOString().slice(0, 10),
   merchant: "",
   amount: "",
   category: "",
@@ -140,45 +140,51 @@ export default function TransactionsPage() {
   }, [txs]);
 
   async function addManualTransaction() {
+    const amountStr = manual.amount.trim().replace(/,/g, "");
+    const amountNum = Number.parseFloat(amountStr);
+    if (!amountStr || !Number.isFinite(amountNum) || amountNum <= 0) {
+      setStatus("Enter a valid amount.");
+      return;
+    }
+    const occurredAt = manual.date || new Date().toISOString().slice(0, 10);
+    const merchant = manual.merchant.trim() || "Manual";
+    const category = manual.category.trim() || "Other";
+
     if (STATIC_MODE) {
       const now = new Date().toISOString();
       setTxs((prev) => [
         {
           id: `m-${Date.now()}`,
           user_id: STATIC_USER_ID,
-          date: manual.date || now.slice(0, 10),
-          merchant: manual.merchant || "Manual",
-          amount: Number(manual.amount || 0),
-          category: manual.category || "Other",
+          date: occurredAt,
+          merchant,
+          amount: amountNum,
+          category,
           source: "manual",
           receipt_url: null,
           created_at: now,
         },
         ...prev,
       ]);
-      setManual(emptyManual);
+      setManual((prev) => ({ ...prev, amount: "" }));
+      setStatus("");
       return;
     }
     if (!userId) {
       setStatus("Please login first.");
       return;
     }
-    const amountNum = Number(manual.amount);
-    if (!manual.date || !manual.merchant || !manual.category || Number.isNaN(amountNum)) {
-      setStatus("Please fill all fields with valid values.");
-      return;
-    }
     setStatus("Adding transaction...");
     try {
       await addExpense({
         amount_cents: Math.round(amountNum * 100),
-        category: manual.category,
-        occurred_at: manual.date,
-        merchant: manual.merchant,
-        note: manual.merchant,
-        source: manual.source,
+        category,
+        occurred_at: occurredAt,
+        merchant,
+        note: merchant,
+        source: "manual",
       });
-      setManual(emptyManual);
+      setManual((prev) => ({ ...prev, amount: "" }));
       setStatus("");
       await refreshTransactions();
     } catch (e) {
@@ -282,7 +288,10 @@ export default function TransactionsPage() {
               <input
                 type="date"
                 value={manual.date}
-                onChange={(e) => setManual({ ...manual, date: e.target.value })}
+                onChange={(e) => {
+                  setManual({ ...manual, date: e.target.value });
+                  if (status) setStatus("");
+                }}
               />
             </div>
             <div className="stack" style={{ minWidth: 160 }}>
@@ -290,7 +299,10 @@ export default function TransactionsPage() {
               <input
                 placeholder="e.g., Uber"
                 value={manual.merchant}
-                onChange={(e) => setManual({ ...manual, merchant: e.target.value })}
+                onChange={(e) => {
+                  setManual({ ...manual, merchant: e.target.value });
+                  if (status) setStatus("");
+                }}
               />
             </div>
             <div className="stack" style={{ minWidth: 120 }}>
@@ -300,7 +312,10 @@ export default function TransactionsPage() {
                 step="0.01"
                 placeholder="e.g., 12.50"
                 value={manual.amount}
-                onChange={(e) => setManual({ ...manual, amount: e.target.value })}
+                onChange={(e) => {
+                  setManual({ ...manual, amount: e.target.value });
+                  if (status) setStatus("");
+                }}
               />
             </div>
             <div className="stack" style={{ minWidth: 160 }}>
@@ -308,7 +323,10 @@ export default function TransactionsPage() {
               <select
                 style={{ paddingTop: 10, paddingBottom: 10 }}
                 value={manual.category}
-                onChange={(e) => setManual({ ...manual, category: e.target.value })}
+                onChange={(e) => {
+                  setManual({ ...manual, category: e.target.value });
+                  if (status) setStatus("");
+                }}
               >
                 <option value="">Select...</option>
                 <option value="Groceries">Groceries</option>
