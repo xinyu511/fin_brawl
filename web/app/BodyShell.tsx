@@ -30,7 +30,7 @@ export default function BodyShell({ children }: { children: ReactNode }) {
           <h2 className="brand-font" style={{ margin: 0, fontSize: 32 }}>PiggyBot</h2>
         </Link>
         <div className="muted" style={{ fontSize: 13 }}>
-          Next.js • Supabase • OpenAI
+          Next.js • Supabase • Dedalus
         </div>
       </div>
       {children}
