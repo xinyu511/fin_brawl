@@ -460,6 +460,53 @@
   gap: 12px;
 }
 
+.chatMetaCard {
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  padding: 14px 16px;
+}
+
+.chatMetaRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.chatMetaBlock {
+  display: grid;
+  gap: 6px;
+}
+
+.chatMetaLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #51606e;
+  font-weight: 600;
+}
+
+.chatMetaValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2228;
+}
+
+.chatMetaInput {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  padding: 10px 12px;
+  font-size: 16px;
+  background: #ffffff;
+}
+
+.chatMetaHint {
+  font-size: 12px;
+  color: #6a7784;
+}
+
 .chatCardTitle {
   font-weight: 700;
   font-size: 18px;

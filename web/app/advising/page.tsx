@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
-import { getMe, getToken } from "@/lib/backendClient";
+import { getIncomes, getMe, getToken, type BackendIncome } from "@/lib/backendClient";
 import Sidebar from "../dashboard/Sidebar";
 import styles from "../dashboard/page.module.css";
 
@@ -12,7 +12,6 @@ type ChatMsg = { role: "user" | "assistant"; content: string };
 
 const STATIC_MODE = process.env.NEXT_PUBLIC_STATIC_MODE === "true";
 const STATIC_USER_ID = "static-user";
-const INCOME_KEY = "fin_brawl_monthly_income";
 const FIXED_KEY = "fin_brawl_fixed_costs";
 
 export default function AdvisingPage() {
@@ -29,15 +28,15 @@ export default function AdvisingPage() {
         "Hi! Ask me about your spending, or whether you can afford something.",
     },
   ]);
-  const [monthlyIncome, setMonthlyIncome] = useState<number>(4000);
-  const [fixedCosts, setFixedCosts] = useState<number>(1500);
+  const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
+  const [fixedCosts, setFixedCosts] = useState<number>(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const storedIncome = window.localStorage.getItem(INCOME_KEY);
     const storedFixed = window.localStorage.getItem(FIXED_KEY);
-    if (storedIncome) setMonthlyIncome(Number(storedIncome));
-    if (storedFixed) setFixedCosts(Number(storedFixed));
+    if (storedFixed !== null) {
+      setFixedCosts(Number(storedFixed));
+    }
   }, []);
 
   useEffect(() => {
@@ -68,6 +67,22 @@ export default function AdvisingPage() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!userId || STATIC_MODE) return;
+    (async () => {
+      try {
+        const rows = await getIncomes();
+        const total = rows.reduce(
+          (acc: number, inc: BackendIncome) => acc + Number(inc.amount || 0),
+          0
+        );
+        setMonthlyIncome(total);
+      } catch {
+        // Keep prior value; chat route will fall back if needed.
+      }
+    })();
+  }, [userId]);
 
   async function sendChat() {
     const msg = chatInput.trim();

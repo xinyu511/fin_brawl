@@ -44,9 +44,67 @@ Output ONLY JSON: an array of objects. Each object must have:
 - date (YYYY-MM-DD)
 - amount (number, total charged for that transaction)
 Optional fields:
-- category (string, choose the best fit from: Groceries, Dining, Transport, Housing, Utilities, Health, Entertainment, Subscriptions, Shopping, Other)
+- category (string, choose the best fit from: Groceries, Dining, Transport, Housing, Utilities, Health, Entertainment, Subscriptions, Shopping)
 - note (string)
 If the receipt clearly represents a single purchase, return a single-item array.`;
+
+const CATEGORIES = [
+  "Groceries",
+  "Dining",
+  "Transport",
+  "Housing",
+  "Utilities",
+  "Health",
+  "Entertainment",
+  "Subscriptions",
+  "Shopping",
+] as const;
+
+const CATEGORY_MAP = new Map(
+  CATEGORIES.map((c) => [c.toLowerCase(), c])
+);
+
+function normalizeCategory(input?: string): (typeof CATEGORIES)[number] | null {
+  if (!input) return null;
+  const cleaned = input.trim().toLowerCase();
+  return CATEGORY_MAP.get(cleaned) || null;
+}
+
+async function classifyCategory(
+  model: string,
+  merchant: string,
+  note?: string
+): Promise<(typeof CATEGORIES)[number]> {
+  const prompt = `Choose the single best category from this list only:
+${CATEGORIES.join(", ")}.
+Return ONLY JSON: {"category":"<one of the list>"}.
+Merchant: ${merchant}
+Note: ${note || ""}`;
+  const resp = await llmComplete({
+    model,
+    input: [
+      { role: "system", content: [{ type: "input_text", text: "You are a strict JSON classifier." }] },
+      { role: "user", content: [{ type: "input_text", text: prompt }] },
+    ],
+  });
+  const textOut: string =
+    resp?.output?.[0]?.content?.find(
+      (c: { type: string }) => c.type === "output_text"
+    )?.text ?? "";
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(textOut);
+  } catch {
+    const obj = textOut.match(/\{[\s\S]*\}/);
+    if (!obj) throw new Error("Could not parse category JSON from model output");
+    parsed = JSON.parse(obj[0]);
+  }
+  const cat = normalizeCategory((parsed as { category?: string }).category);
+  if (!cat) {
+    throw new Error("Model returned an invalid category");
+  }
+  return cat;
+}
 
 export async function POST(req: Request) {
   try {
@@ -119,7 +177,14 @@ export async function POST(req: Request) {
     const txs = z.array(Tx).min(1).parse(normalized);
 
     const createdIds: number[] = [];
+    const txsNormalized = [];
     for (const tx of txs) {
+      const normalizedCat = normalizeCategory(tx.category);
+      const category =
+        normalizedCat || (await classifyCategory(model, tx.merchant, tx.note));
+      txsNormalized.push({ ...tx, category });
+    }
+    for (const tx of txsNormalized) {
       const created = await backendFetch<{ id: number }>(
         "/expenses",
         token,
@@ -127,7 +192,7 @@ export async function POST(req: Request) {
           method: "POST",
           body: JSON.stringify({
             amount_cents: Math.round(tx.amount * 100),
-            category: tx.category || "Receipt",
+            category: tx.category,
             occurred_at: tx.date,
             note: tx.note || tx.merchant,
             merchant: tx.merchant,
@@ -139,7 +204,7 @@ export async function POST(req: Request) {
       createdIds.push(created.id);
     }
 
-    return NextResponse.json({ ok: true, extracted: txs, created_ids: createdIds });
+    return NextResponse.json({ ok: true, extracted: txsNormalized, created_ids: createdIds });
   } catch (e: unknown) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Unknown error" },

@@ -45,6 +45,8 @@ type IncomeForm = {
   endDate: string;
 };
 
+const FIXED_KEY = "fin_brawl_fixed_costs";
+
 const emptyIncomeForm: IncomeForm = {
   amount: "",
   source: "",
@@ -77,6 +79,7 @@ export default function AccountPage() {
   const [incomeForm, setIncomeForm] = useState<IncomeForm>(emptyIncomeForm);
   const [incomes, setIncomes] = useState<BackendIncome[]>([]);
   const [deletingIncomeId, setDeletingIncomeId] = useState<string | null>(null);
+  const [fixedCostsInput, setFixedCostsInput] = useState<string>("");
 
   useEffect(() => {
     (async () => {
@@ -111,6 +114,12 @@ export default function AccountPage() {
         setIncomeStatus({ kind: "error", text: message });
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storedFixed = window.localStorage.getItem(FIXED_KEY);
+    if (storedFixed !== null) setFixedCostsInput(storedFixed);
   }, []);
 
   async function refreshIncomes() {
@@ -433,6 +442,33 @@ export default function AccountPage() {
                 </tbody>
               </table>
             )}
+          </div>
+
+          <div className={accountStyles.sectionDivider} />
+
+          <h3>Fixed costs</h3>
+          <p className="muted">
+            Add a monthly total for recurring essentials (rent, utilities,
+            subscriptions) so affordability checks are accurate.
+          </p>
+          <div className={accountStyles.incomeGrid}>
+            <div className={accountStyles.field}>
+              <label>Monthly fixed costs</label>
+              <input
+                type="number"
+                placeholder="e.g., 1500"
+                value={fixedCostsInput}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  setFixedCostsInput(raw);
+                  if (typeof window !== "undefined") {
+                    const parsed = Number(raw.replace(/,/g, ""));
+                    const next = Number.isFinite(parsed) ? parsed : 0;
+                    window.localStorage.setItem(FIXED_KEY, String(next));
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

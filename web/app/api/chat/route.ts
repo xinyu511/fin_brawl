@@ -41,11 +41,12 @@ async function backendFetch<T = unknown>(
 
 // 1) Intent router prompt
 const INTENT_SYSTEM = `You are an intent router for a budgeting app.
-Return ONLY JSON: {"intent":"create_transaction"|"affordability"|"summary"|"city","confidence":0-1,"fields":{...}}.
+Return ONLY JSON: {"intent":"create_transaction"|"affordability"|"summary"|"city"|"income_info","confidence":0-1,"fields":{...}}.
 - create_transaction: user states they spent money.
 - affordability: user asks if they can afford a one-time purchase/trip.
 - summary: user asks why overspending, what to cut, monthly summary.
-- city: user asks which city to live in / cost of living.`;
+- city: user asks which city to live in / cost of living.
+- income_info: user asks about their income on file / monthly income / salary on record.`;
 
 // 2) For create_transaction, extract minimal fields from text
 const CREATE_SYSTEM = `Extract a transaction from the user's message.
@@ -71,6 +72,11 @@ type BackendTx = {
   category: string | null;
 };
 
+type BackendIncome = {
+  amount: number;
+  source?: string;
+};
+
 async function sumLast30DaysAndTxs(token: string | null) {
   const txs = (await backendFetch<BackendTx[]>(
     "/expenses?limit=500",
@@ -84,17 +90,47 @@ async function sumLast30DaysAndTxs(token: string | null) {
   return { total, txs: last30, cutoffISO };
 }
 
+async function resolveMonthlyIncome(
+  token: string | null,
+  providedIncome: number | null | undefined
+): Promise<number> {
+  if (typeof providedIncome === "number" && providedIncome > 0) {
+    return providedIncome;
+  }
+  if (!token) return 0;
+  try {
+    const incomes = (await backendFetch<BackendIncome[]>(
+      "/incomes?limit=200",
+      token
+    )) as BackendIncome[];
+    return incomes.reduce((acc, inc) => acc + Number(inc.amount || 0), 0);
+  } catch {
+    return 0;
+  }
+}
+
+async function fetchIncomes(token: string | null): Promise<BackendIncome[]> {
+  if (!token) return [];
+  try {
+    return (await backendFetch<BackendIncome[]>(
+      "/incomes?limit=200",
+      token
+    )) as BackendIncome[];
+  } catch {
+    return [];
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = Body.parse(await req.json());
     const message = body.message;
-    const user_id = body.user_id;
     const token = body.token ?? null;
     const modelText = process.env.DEDALUS_API_KEY
       ? (process.env.DEDALUS_MODEL_TEXT || "openai/gpt-4o-mini")
       : (process.env.OPENAI_MODEL_TEXT || "gpt-4.1-mini");
 
-    const guestMode = !user_id || !token;
+    const guestMode = !token;
     if (guestMode) {
       const explain = await llmComplete({
         model: modelText,
@@ -144,6 +180,30 @@ Note: You do not have access to the user's transactions. Give general guidance a
     }
 
     const intent = routed.intent as string;
+
+    // --- income_info ---
+    if (intent === "income_info") {
+      const incomes = await fetchIncomes(token);
+      if (!incomes.length) {
+        return NextResponse.json({
+          reply:
+            "I don’t see any income records yet. Add them in Account → Income, then ask again.",
+        });
+      }
+      const total = incomes.reduce((acc, inc) => acc + Number(inc.amount || 0), 0);
+      const lines = incomes
+        .map((inc) => {
+          const amt = Number(inc.amount || 0).toFixed(2);
+          const src = inc.source?.trim() || "Income";
+          return `- ${src}: $${amt}`;
+        })
+        .join("\n");
+      return NextResponse.json({
+        reply: `Here’s your income on file:\n${lines}\n\nTotal monthly income: $${total.toFixed(
+          2
+        )}.`,
+      });
+    }
 
     // --- create_transaction ---
     if (intent === "create_transaction") {
@@ -216,8 +276,29 @@ Note: You do not have access to the user's transactions. Give general guidance a
 
       const { total: last30Spend, cutoffISO } =
         await sumLast30DaysAndTxs(token);
-      const income = body.finance?.monthlyIncome ?? 0;
-      const fixed = body.finance?.fixedCosts ?? 0;
+      const income = await resolveMonthlyIncome(token, body.finance?.monthlyIncome ?? null);
+      const fixed =
+        typeof body.finance?.fixedCosts === "number"
+          ? body.finance?.fixedCosts
+          : 0;
+      const missing: string[] = [];
+      if (!income || income <= 0) {
+        missing.push(
+          "monthly income (add it in Account → Income so I can use your real data)"
+        );
+      }
+      if (!fixed || fixed <= 0) {
+        missing.push(
+          "monthly fixed costs (enter it in Account → Fixed costs)"
+        );
+      }
+      if (missing.length > 0) {
+        return NextResponse.json({
+          reply: `I can answer that, but I’m missing: ${missing.join(
+            "; "
+          )}. Once you add those, ask again and I’ll run the affordability check.`,
+        });
+      }
       const estMonthly = last30Spend;
       const freeCash = income - fixed - estMonthly;
       const can = target > 0 ? freeCash >= target : freeCash >= 0;
@@ -268,6 +349,12 @@ If you want a data-backed answer, plug in a cost-of-living dataset (TODO in code
     // --- summary (default) ---
     const { total: last30Spend, txs, cutoffISO } =
       await sumLast30DaysAndTxs(token);
+    if (txs.length === 0) {
+      return NextResponse.json({
+        reply:
+          "I don’t have any transactions recorded yet. Add expenses in the Transactions page or upload a receipt, then ask again for a personalized summary.",
+      });
+    }
 
     const byMerchant = new Map<string, number>();
     for (const t of txs) {

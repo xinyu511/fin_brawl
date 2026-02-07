@@ -1,4 +1,4 @@
-// File: /Users/xinyuli/Desktop/CMU/tartanhack/fin_brawl/web/app/account/page.tsx
+// File: /Users/williamzou/Library/CloudStorage/GoogleDrive-yangzou@andrew.cmu.edu/其他计算机/我的笔记本电脑/CMU/fin_brawl/web/app/account/page.tsx
 import * as entry from '../../../../app/account/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
